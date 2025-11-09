@@ -10,7 +10,7 @@ const Filters = ({ filters, onFilterChange, positions }) => {
   const uniqueChains = [...new Set(positions.map(p => p.chain))];
   const uniquePlatforms = [...new Set(positions.map(p => p.platform))];
 
-  const hasActiveFilters = filters.wallet || filters.chain || filters.platform || !filters.showClosed;
+  const hasActiveFilters = (filters.wallet && filters.wallet !== 'all') || (filters.chain && filters.chain !== 'all') || (filters.platform && filters.platform !== 'all') || !filters.showClosed;
 
   const clearFilters = () => {
     onFilterChange({
