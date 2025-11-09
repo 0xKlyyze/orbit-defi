@@ -16,9 +16,9 @@ function App() {
   const [editingPosition, setEditingPosition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    wallet: '',
-    chain: '',
-    platform: '',
+    wallet: 'all',
+    chain: 'all',
+    platform: 'all',
     showClosed: true
   });
 
