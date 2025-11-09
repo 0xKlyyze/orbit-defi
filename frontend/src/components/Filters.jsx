@@ -14,9 +14,9 @@ const Filters = ({ filters, onFilterChange, positions }) => {
 
   const clearFilters = () => {
     onFilterChange({
-      wallet: '',
-      chain: '',
-      platform: '',
+      wallet: 'all',
+      chain: 'all',
+      platform: 'all',
       showClosed: true
     });
   };
