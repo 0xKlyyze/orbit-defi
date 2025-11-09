@@ -46,14 +46,14 @@ const Filters = ({ filters, onFilterChange, positions }) => {
         <div className="space-y-2">
           <Label htmlFor="wallet-filter" className="text-zinc-300 text-sm">Wallet</Label>
           <Select
-            value={filters.wallet}
+            value={filters.wallet || 'all'}
             onValueChange={(value) => onFilterChange({ ...filters, wallet: value })}
           >
             <SelectTrigger id="wallet-filter" data-testid="filter-wallet" className="bg-zinc-900/50 border-red-500/30 text-white focus:border-red-500 focus:ring-red-500/20">
               <SelectValue placeholder="All Wallets" />
             </SelectTrigger>
             <SelectContent className="bg-zinc-900 border-red-500/30">
-              <SelectItem value="" className="text-white hover:bg-red-500/20">All Wallets</SelectItem>
+              <SelectItem value="all" className="text-white hover:bg-red-500/20">All Wallets</SelectItem>
               {uniqueWallets.map(wallet => (
                 <SelectItem key={wallet} value={wallet} className="text-white hover:bg-red-500/20">
                   {wallet}
