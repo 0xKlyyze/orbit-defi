@@ -66,14 +66,14 @@ const Filters = ({ filters, onFilterChange, positions }) => {
         <div className="space-y-2">
           <Label htmlFor="chain-filter" className="text-zinc-300 text-sm">Chain</Label>
           <Select
-            value={filters.chain}
+            value={filters.chain || 'all'}
             onValueChange={(value) => onFilterChange({ ...filters, chain: value })}
           >
             <SelectTrigger id="chain-filter" data-testid="filter-chain" className="bg-zinc-900/50 border-red-500/30 text-white focus:border-red-500 focus:ring-red-500/20">
               <SelectValue placeholder="All Chains" />
             </SelectTrigger>
             <SelectContent className="bg-zinc-900 border-red-500/30">
-              <SelectItem value="" className="text-white hover:bg-red-500/20">All Chains</SelectItem>
+              <SelectItem value="all" className="text-white hover:bg-red-500/20">All Chains</SelectItem>
               {uniqueChains.map(chain => (
                 <SelectItem key={chain} value={chain} className="text-white hover:bg-red-500/20">
                   {chain}
