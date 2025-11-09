@@ -47,15 +47,15 @@ function App() {
   const applyFilters = () => {
     let filtered = [...positions];
 
-    if (filters.wallet) {
+    if (filters.wallet && filters.wallet !== 'all') {
       filtered = filtered.filter(p => p.wallet === filters.wallet);
     }
 
-    if (filters.chain) {
+    if (filters.chain && filters.chain !== 'all') {
       filtered = filtered.filter(p => p.chain === filters.chain);
     }
 
-    if (filters.platform) {
+    if (filters.platform && filters.platform !== 'all') {
       filtered = filtered.filter(p => p.platform === filters.platform);
     }
 
