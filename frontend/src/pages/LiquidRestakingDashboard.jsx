@@ -288,10 +288,26 @@ const LiquidRestakingDashboard = () => {
         onDelete={handleDeleteLoop}
       />
 
-      <LoopForm
-        isOpen={isFormOpen}
+      <LoopFormSelector
+        isOpen={isSelectorOpen}
+        onClose={() => setIsSelectorOpen(false)}
+        onSelectMode={handleSelectMode}
+      />
+
+      <QuickLoopForm
+        isOpen={isQuickFormOpen}
         onClose={() => {
-          setIsFormOpen(false);
+          setIsQuickFormOpen(false);
+          setEditingLoop(null);
+        }}
+        onSave={handleSaveLoop}
+        loop={editingLoop}
+      />
+
+      <AdvancedLoopForm
+        isOpen={isAdvancedFormOpen}
+        onClose={() => {
+          setIsAdvancedFormOpen(false);
           setEditingLoop(null);
         }}
         onSave={handleSaveLoop}
