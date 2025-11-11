@@ -301,9 +301,11 @@ const LiquidRestakingDashboard = () => {
         onClose={() => {
           setIsQuickFormOpen(false);
           setEditingLoop(null);
+          setBasicLoopInfo(null);
         }}
         onSave={handleSaveLoop}
         loop={editingLoop}
+        basicInfo={basicLoopInfo}
       />
 
       <AdvancedLoopForm
@@ -311,9 +313,11 @@ const LiquidRestakingDashboard = () => {
         onClose={() => {
           setIsAdvancedFormOpen(false);
           setEditingLoop(null);
+          setBasicLoopInfo(null);
         }}
         onSave={handleSaveLoop}
         loop={editingLoop}
+        basicInfo={basicLoopInfo}
       />
     </div>
   );
