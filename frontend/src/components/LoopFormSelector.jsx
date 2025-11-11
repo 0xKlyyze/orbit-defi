@@ -177,13 +177,14 @@ const LoopFormSelector = ({ isOpen, onClose, onSelectMode }) => {
               </li>
             </ul>
           </button>
-        </div>
+          </div>
 
-        <div className="mt-6 p-4 bg-zinc-800/30 rounded-lg border border-zinc-700/50">
-          <p className="text-sm text-zinc-400">
-            <span className="font-semibold text-zinc-300">💡 Tip:</span> Start with Quick Loop for simple strategies. 
-            Use Advanced Loop for complex multi-step positions or if you need more control.
-          </p>
+          <div className="mt-6 p-4 bg-zinc-800/30 rounded-lg border border-zinc-700/50">
+            <p className="text-sm text-zinc-400">
+              <span className="font-semibold text-zinc-300">💡 Tip:</span> Start with Quick Loop for simple strategies. 
+              Use Advanced Loop for complex multi-step positions or if you need more control.
+            </p>
+          </div>
         </div>
       </div>
     </div>
