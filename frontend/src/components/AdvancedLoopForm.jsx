@@ -11,7 +11,7 @@ const STEP_TYPES = [
   { value: 'supply', label: 'Supply/Lend/Stake', icon: '💰', color: 'emerald' },
   { value: 'borrow', label: 'Borrow', icon: '📤', color: 'orange' },
   { value: 'swap', label: 'Swap', icon: '🔄', color: 'blue' },
-  { value: 'leveraged', label: 'Leveraged Position', icon: '⚡', color: 'purple' }
+  { value: 'leveraged', label: 'Leveraged Position', icon: '⚡', color: 'purple', description: 'Protocol does the loop for you' }
 ];
 
 const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
