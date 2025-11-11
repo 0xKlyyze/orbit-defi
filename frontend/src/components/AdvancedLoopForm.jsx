@@ -239,48 +239,12 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = nu
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Loop Info */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Layers size={20} className="text-orange-400" />
-              Loop Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="loopName" className="text-zinc-300">Loop Name *</Label>
-                <Input
-                  id="loopName"
-                  data-testid="input-loop-name-adv"
-                  value={formData.loopName}
-                  onChange={(e) => setFormData({ ...formData, loopName: e.target.value })}
-                  required
-                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600 focus:border-orange-500 focus:ring-orange-500/20"
-                  placeholder="e.g., Multi-Asset Delta Neutral"
-                />
-              </div>
-              <div>
-                <Label htmlFor="tags" className="text-zinc-300">Tags (comma-separated)</Label>
-                <Input
-                  id="tags"
-                  data-testid="input-tags-adv"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600 focus:border-orange-500 focus:ring-orange-500/20"
-                  placeholder="e.g., complex, multi-protocol"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="description" className="text-zinc-300">Description</Label>
-              <Textarea
-                id="description"
-                data-testid="input-description-adv"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600 focus:border-orange-500 focus:ring-orange-500/20"
-                placeholder="Describe your strategy and goals"
-                rows={2}
-              />
+          {/* Loop Info Display */}
+          <div className="bg-zinc-800/30 rounded-lg p-4 border border-zinc-700/50">
+            <h3 className="text-lg font-bold text-white mb-2">{formData.loopName}</h3>
+            <div className="flex flex-wrap gap-2 text-sm text-zinc-400">
+              {formData.wallet && <span>Wallet: {formData.wallet}</span>}
+              {formData.blockchain && <span>• {formData.blockchain}</span>}
             </div>
           </div>
 
