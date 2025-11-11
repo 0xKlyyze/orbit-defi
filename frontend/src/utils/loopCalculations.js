@@ -78,20 +78,20 @@ export const getRiskLevel = (healthFactor) => {
 
 // Calculate Quick Mode iterations
 export const calculateQuickModeMetrics = (config) => {
-  let totalSupplied = parseFloat(config.initialDeposit?.usd) || 0;
+  const initialDeposit = parseFloat(config.initialDeposit?.usd) || 0;
   let totalBorrowed = 0;
   
-  // Calculate cumulative from iterations
+  // Calculate cumulative borrowed from iterations
   if (config.iterations && config.iterations.length > 0) {
     config.iterations.forEach(iteration => {
       const borrowUSD = parseFloat(iteration.borrowUSD) || 0;
       totalBorrowed += borrowUSD;
-      totalSupplied += borrowUSD; // Borrowed amount becomes new collateral
     });
   }
   
-  const netEquity = totalSupplied - totalBorrowed;
-  const leverage = netEquity > 0 ? totalSupplied / netEquity : 1;
+  // Leverage = (Initial Deposit + Total Borrowed) / Initial Deposit
+  const leverage = initialDeposit > 0 ? (initialDeposit + totalBorrowed) / initialDeposit : 1;
+  
   const netAPY = calculateNetAPY(
     parseFloat(config.lendingAPY) || 0,
     parseFloat(config.borrowingAPY) || 0,
@@ -100,12 +100,12 @@ export const calculateQuickModeMetrics = (config) => {
   
   const liquidationThreshold = parseFloat(config.liquidationThreshold) || 0.75;
   const healthFactor = calculateHealthFactor(
-    [{ usdValue: totalSupplied, liquidationThreshold }],
+    [{ usdValue: initialDeposit, liquidationThreshold }],
     totalBorrowed
   );
   
   return {
-    totalCollateral: totalSupplied,
+    totalCollateral: initialDeposit,
     totalBorrowed,
     leverageRatio: leverage,
     netAPY,
