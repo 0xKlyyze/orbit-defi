@@ -91,7 +91,11 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
       apy: '',
       liquidationThreshold: '0.75',
       notes: '',
-      link: ''
+      link: '',
+      // Leveraged position specific fields
+      lendingAPY: '',
+      borrowAPY: '',
+      leverage: ''
     };
     setSteps([...steps, newStep]);
   };
