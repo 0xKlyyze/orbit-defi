@@ -52,13 +52,11 @@ export const calculateLiquidationPrice = (entryPrice, borrowed, collateral, liqu
   return entryPrice * (borrowed / (collateral * liquidationThreshold));
 };
 
-// Calculate total collateral from steps
+// Calculate total collateral from steps (only the first step which is always lending)
 export const calculateTotalCollateral = (steps) => {
-  return steps
-    .filter(step => step.stepType === 'supply' || step.stepType === 'leveraged')
-    .reduce((sum, step) => {
-      return sum + (parseFloat(step.usdValue) || 0);
-    }, 0);
+  if (steps.length === 0) return 0;
+  // The first step is always the initial collateral
+  return parseFloat(steps[0].usdValue) || 0;
 };
 
 // Calculate total borrowed from steps
