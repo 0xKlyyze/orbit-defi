@@ -15,7 +15,9 @@ import { getRiskLevel } from '@/utils/loopCalculations';
 const LiquidRestakingDashboard = () => {
   const [loops, setLoops] = useState([]);
   const [filteredLoops, setFilteredLoops] = useState([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [isQuickFormOpen, setIsQuickFormOpen] = useState(false);
+  const [isAdvancedFormOpen, setIsAdvancedFormOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLoop, setSelectedLoop] = useState(null);
   const [editingLoop, setEditingLoop] = useState(null);
