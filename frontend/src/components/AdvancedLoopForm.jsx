@@ -458,7 +458,75 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
                         </div>
 
                         {/* APY & Liquidation Threshold */}
-                        {(step.stepType === 'supply' || step.stepType === 'borrow' || step.stepType === 'leveraged') && (
+                        {step.stepType === 'leveraged' ? (
+                          // Leveraged position specific fields
+                          <div className="space-y-4">
+                            <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
+                              <p className="text-xs text-purple-400 mb-2">⚡ Leveraged Position: Protocol handles the loop automatically</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <Label className="text-zinc-300 text-sm">Lending APY (%)</Label>
+                                <Input
+                                  data-testid={`step-lending-apy-${index}`}
+                                  type="number"
+                                  step="0.01"
+                                  value={step.lendingAPY}
+                                  onChange={(e) => updateStep(index, 'lendingAPY', e.target.value)}
+                                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
+                                  placeholder="10.5"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-zinc-300 text-sm">Borrow APY (%)</Label>
+                                <Input
+                                  data-testid={`step-borrow-apy-${index}`}
+                                  type="number"
+                                  step="0.01"
+                                  value={step.borrowAPY}
+                                  onChange={(e) => updateStep(index, 'borrowAPY', e.target.value)}
+                                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
+                                  placeholder="8.5"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-zinc-300 text-sm">Leverage (x)</Label>
+                                <Input
+                                  data-testid={`step-leverage-${index}`}
+                                  type="number"
+                                  step="0.1"
+                                  min="1"
+                                  value={step.leverage}
+                                  onChange={(e) => updateStep(index, 'leverage', e.target.value)}
+                                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
+                                  placeholder="3"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label className="text-zinc-300 text-sm">Calculated Net APY (%)</Label>
+                                <div className="h-10 flex items-center px-3 bg-zinc-900/50 border border-emerald-500/30 rounded-lg text-emerald-400 font-semibold">
+                                  {step.apy || '0.00'}%
+                                </div>
+                              </div>
+                              <div>
+                                <Label className="text-zinc-300 text-sm">Max Liquidation Threshold</Label>
+                                <Input
+                                  data-testid={`step-lt-${index}`}
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  max="1"
+                                  value={step.liquidationThreshold}
+                                  onChange={(e) => updateStep(index, 'liquidationThreshold', e.target.value)}
+                                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
+                                  placeholder="0.75"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (step.stepType === 'supply' || step.stepType === 'borrow') && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <Label className="text-zinc-300 text-sm">
@@ -474,7 +542,7 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
                                 placeholder="5.5"
                               />
                             </div>
-                            {(step.stepType === 'supply' || step.stepType === 'leveraged') && (
+                            {step.stepType === 'supply' && (
                               <div>
                                 <Label className="text-zinc-300 text-sm">Liquidation Threshold</Label>
                                 <Input
