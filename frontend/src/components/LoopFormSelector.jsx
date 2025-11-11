@@ -144,12 +144,12 @@ const LoopFormSelector = ({ isOpen, onClose, onSelectMode }) => {
             </ul>
           </button>
 
-          {/* Advanced Mode */}
-          <button
-            onClick={() => onSelectMode('advanced')}
-            data-testid="select-advanced-mode"
-            className="group bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-orange-500/20 rounded-xl p-6 text-left transition-all hover:scale-[1.02] hover:shadow-xl hover:border-orange-500/40"
-          >
+            {/* Advanced Mode */}
+            <button
+              onClick={() => handleModeSelect('advanced')}
+              data-testid="select-advanced-mode"
+              className="group bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-orange-500/20 rounded-xl p-6 text-left transition-all hover:scale-[1.02] hover:shadow-xl hover:border-orange-500/40"
+            >
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-orange-500/20 rounded-lg group-hover:bg-orange-500/30 transition-colors">
                 <Settings className="text-orange-400" size={24} />
