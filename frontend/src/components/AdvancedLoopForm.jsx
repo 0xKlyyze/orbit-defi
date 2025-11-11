@@ -14,7 +14,7 @@ const STEP_TYPES = [
   { value: 'leveraged', label: 'Leveraged Position', icon: '⚡', color: 'purple', description: 'Protocol does the loop for you' }
 ];
 
-const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
+const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = null }) => {
   const [formData, setFormData] = useState({
     loopName: '',
     description: '',
