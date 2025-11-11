@@ -54,18 +54,4 @@ export const getLoops = async () => {
   }
 };
 
-export const calculateHealthFactor = (collateralValue, debtValue, liquidationThreshold = 0.75) => {
-  if (debtValue === 0) return 999;
-  return (collateralValue * liquidationThreshold) / debtValue;
-};
-
-export const calculateLeverageRatio = (collateralValue, debtValue) => {
-  if (collateralValue === 0) return 1;
-  return (parseFloat(collateralValue) + parseFloat(debtValue)) / parseFloat(collateralValue);
-};
-
-export const getRiskLevel = (healthFactor) => {
-  if (healthFactor >= 2.0) return { level: 'Safe', color: 'emerald', status: 'Active' };
-  if (healthFactor >= 1.5) return { level: 'Warning', color: 'yellow', status: 'In-risk' };
-  return { level: 'Critical', color: 'red', status: 'In-risk' };
-};
+// Calculation functions moved to /utils/loopCalculations.js
