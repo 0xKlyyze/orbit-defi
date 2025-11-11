@@ -6,7 +6,7 @@ import { Filter, X } from 'lucide-react';
 
 const RestakingFilters = ({ filters, onFilterChange, loops }) => {
   const uniqueWallets = [...new Set(loops.map(l => l.wallet).filter(Boolean))];
-  const uniqueChains = [...new Set(loops.map(l => l.chain).filter(Boolean))];
+  const uniqueChains = [...new Set(loops.map(l => l.blockchain || l.chain).filter(Boolean))];
   const uniqueStatuses = ['All', 'Active', 'In-risk'];
 
   const hasActiveFilters = (filters.wallet && filters.wallet !== 'all') || 
