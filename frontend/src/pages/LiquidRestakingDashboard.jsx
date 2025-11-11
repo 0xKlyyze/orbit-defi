@@ -21,6 +21,7 @@ const LiquidRestakingDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLoop, setSelectedLoop] = useState(null);
   const [editingLoop, setEditingLoop] = useState(null);
+  const [basicLoopInfo, setBasicLoopInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     wallet: 'all',
