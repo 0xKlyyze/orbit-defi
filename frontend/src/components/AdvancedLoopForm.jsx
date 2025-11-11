@@ -49,7 +49,9 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = nu
       setFormData({
         loopName: loop.loopName || '',
         description: loop.description || '',
-        tags: loop.tags?.join(', ') || ''
+        tags: loop.tags?.join(', ') || '',
+        wallet: loop.wallet || '',
+        blockchain: loop.blockchain || ''
       });
       if (loop.steps && loop.steps.length > 0) {
         setSteps(loop.steps.map((step, index) => ({
@@ -58,8 +60,16 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = nu
           ...step
         })));
       }
+    } else if (basicInfo) {
+      setFormData({
+        loopName: basicInfo.loopName || '',
+        description: basicInfo.description || '',
+        tags: basicInfo.tags || '',
+        wallet: basicInfo.wallet || '',
+        blockchain: basicInfo.blockchain || ''
+      });
     }
-  }, [loop, isOpen]);
+  }, [loop, basicInfo, isOpen]);
 
   useEffect(() => {
     calculateMetrics();
