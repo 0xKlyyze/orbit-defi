@@ -132,6 +132,8 @@ const QuickLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = null 
       loopName: formData.loopName,
       description: formData.description,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+      wallet: formData.wallet,
+      blockchain: formData.blockchain,
       mode: 'quick',
       quickConfig: {
         protocol: formData.protocol,
