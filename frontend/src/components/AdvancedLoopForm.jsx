@@ -180,6 +180,8 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = nu
       loopName: formData.loopName,
       description: formData.description,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+      wallet: formData.wallet,
+      blockchain: formData.blockchain,
       mode: 'advanced',
       steps: steps.map((step, index) => ({
         stepNumber: index + 1,
