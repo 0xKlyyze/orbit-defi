@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import LoopCard from '@/components/LoopCard';
 import LoopModal from '@/components/LoopModal';
-import LoopForm from '@/components/LoopForm';
+import LoopFormSelector from '@/components/LoopFormSelector';
+import QuickLoopForm from '@/components/QuickLoopForm';
+import AdvancedLoopForm from '@/components/AdvancedLoopForm';
 import RestakingCharts from '@/components/RestakingCharts';
 import RestakingFilters from '@/components/RestakingFilters';
-import { getLoops, addLoop, updateLoop, deleteLoop, getRiskLevel } from '@/services/firebaseLoops';
+import { getLoops, addLoop, updateLoop, deleteLoop } from '@/services/firebaseLoops';
+import { getRiskLevel } from '@/utils/loopCalculations';
 
 const LiquidRestakingDashboard = () => {
   const [loops, setLoops] = useState([]);
