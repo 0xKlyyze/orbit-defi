@@ -39,28 +39,43 @@ const LoopCard = ({ loop, onClick }) => {
     >
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-xl font-bold text-white mb-1" data-testid="loop-name">{loop.loopName}</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-xl font-bold text-white" data-testid="loop-name">{loop.loopName}</h3>
+            {loop.mode && (
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                loop.mode === 'quick' ? 'bg-red-500/20 text-red-400' : 'bg-orange-500/20 text-orange-400'
+              }`}>
+                {loop.mode === 'quick' ? <Zap size={12} className="inline mr-1" /> : <Settings size={12} className="inline mr-1" />}
+                {loop.mode === 'quick' ? 'Quick' : 'Advanced'}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <span
               className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                 risk.color === 'emerald' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
                 risk.color === 'yellow' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                risk.color === 'orange' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
                 'bg-red-500/20 text-red-400 border border-red-500/30'
               }`}
               data-testid="loop-status"
             >
               {risk.status}
             </span>
-            <span className="text-xs text-zinc-500">{loop.numberProtocols || 0} Protocols</span>
+            <span className="text-xs text-zinc-500">
+              {loop.mode === 'quick' ? '1 Protocol' : `${loop.numberProtocols || 0} Protocols`}
+            </span>
           </div>
         </div>
         <div className={`p-2 rounded-lg ${
           risk.color === 'emerald' ? 'bg-emerald-500/20' :
           risk.color === 'yellow' ? 'bg-yellow-500/20' :
+          risk.color === 'orange' ? 'bg-orange-500/20' :
           'bg-red-500/20'
         }`}>
           {risk.color === 'emerald' ? <TrendingUp className="text-emerald-400" size={20} /> :
            risk.color === 'yellow' ? <AlertTriangle className="text-yellow-400" size={20} /> :
+           risk.color === 'orange' ? <AlertTriangle className="text-orange-400" size={20} /> :
            <AlertTriangle className="text-red-400" size={20} />}
         </div>
       </div>
