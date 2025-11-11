@@ -18,7 +18,7 @@ export const calculateNetAPY = (supplyAPY, borrowAPY, leverage) => {
   return (supplyAPY * leverage) - (borrowAPY * (leverage - 1));
 };
 
-// Aggregate APY for Advanced Mode (weighted average)
+// Aggregate APY for Advanced Mode (weighted average with borrow as negative)
 export const calculateAggregateAPY = (steps) => {
   const totalCapital = steps.reduce((sum, step) => {
     return sum + (parseFloat(step.usdValue) || 0);
@@ -30,7 +30,11 @@ export const calculateAggregateAPY = (steps) => {
     const value = parseFloat(step.usdValue) || 0;
     const apy = parseFloat(step.apy) || 0;
     const weight = value / totalCapital;
-    return sum + (apy * weight);
+    
+    // Borrow APY is negative (cost), supply/leveraged is positive (yield)
+    const apyMultiplier = step.stepType === 'borrow' ? -1 : 1;
+    
+    return sum + (apy * weight * apyMultiplier);
   }, 0);
   
   return weightedAPY;
