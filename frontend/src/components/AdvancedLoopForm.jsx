@@ -509,37 +509,19 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = nu
                             </div>
                           </div>
                         ) : (step.stepType === 'supply' || step.stepType === 'borrow') && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label className="text-zinc-300 text-sm">
-                                {step.stepType === 'borrow' ? 'Borrow APY (%)' : 'Yield APY (%)'}
-                              </Label>
-                              <Input
-                                data-testid={`step-apy-${index}`}
-                                type="number"
-                                step="0.01"
-                                value={step.apy}
-                                onChange={(e) => updateStep(index, 'apy', e.target.value)}
-                                className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
-                                placeholder="5.5"
-                              />
-                            </div>
-                            {step.stepType === 'supply' && (
-                              <div>
-                                <Label className="text-zinc-300 text-sm">Liquidation Threshold</Label>
-                                <Input
-                                  data-testid={`step-lt-${index}`}
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  max="1"
-                                  value={step.liquidationThreshold}
-                                  onChange={(e) => updateStep(index, 'liquidationThreshold', e.target.value)}
-                                  className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
-                                  placeholder="0.75"
-                                />
-                              </div>
-                            )}
+                          <div>
+                            <Label className="text-zinc-300 text-sm">
+                              {step.stepType === 'borrow' ? 'Borrow APY (%)' : 'Yield APY (%)'}
+                            </Label>
+                            <Input
+                              data-testid={`step-apy-${index}`}
+                              type="number"
+                              step="0.01"
+                              value={step.apy}
+                              onChange={(e) => updateStep(index, 'apy', e.target.value)}
+                              className="bg-zinc-900/50 border-orange-500/30 text-white placeholder:text-zinc-600"
+                              placeholder="5.5"
+                            />
                           </div>
                         )}
 
