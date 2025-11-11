@@ -145,8 +145,110 @@ const LoopModal = ({ loop, isOpen, onClose, onEdit, onDelete }) => {
             </div>
           </div>
 
-          {/* Protocol Breakdown */}
-          {loop.protocolBreakdown && loop.protocolBreakdown.length > 0 && (
+          {/* Loop Mode Info */}
+          <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              {loop.mode === 'quick' ? <Zap className="text-red-400" size={18} /> : <Settings className="text-orange-400" size={18} />}
+              <h3 className="text-lg font-semibold text-white">
+                {loop.mode === 'quick' ? 'Quick Loop Configuration' : 'Advanced Loop Steps'}
+              </h3>
+            </div>
+            
+            {loop.mode === 'quick' && loop.quickConfig && (
+              <div className="space-y-3 mt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-zinc-800/50 rounded p-2">
+                    <p className="text-xs text-zinc-500">Protocol</p>
+                    <p className="text-sm text-white font-medium">{loop.quickConfig.protocol}</p>
+                  </div>
+                  <div className="bg-zinc-800/50 rounded p-2">
+                    <p className="text-xs text-zinc-500">Assets</p>
+                    <p className="text-sm text-white font-medium">
+                      {loop.quickConfig.lendingAsset}
+                      {loop.quickConfig.borrowingAsset && loop.quickConfig.borrowingAsset !== loop.quickConfig.lendingAsset && 
+                        ` / ${loop.quickConfig.borrowingAsset}`}
+                    </p>
+                  </div>
+                  <div className="bg-zinc-800/50 rounded p-2">
+                    <p className="text-xs text-zinc-500">Lending APY</p>
+                    <p className="text-sm text-emerald-400 font-medium">{loop.quickConfig.lendingAPY}%</p>
+                  </div>
+                  <div className="bg-zinc-800/50 rounded p-2">
+                    <p className="text-xs text-zinc-500">Borrowing APY</p>
+                    <p className="text-sm text-orange-400 font-medium">{loop.quickConfig.borrowingAPY}%</p>
+                  </div>
+                </div>
+                {loop.quickConfig.iterations && loop.quickConfig.iterations.length > 0 && (
+                  <div>
+                    <p className="text-sm text-zinc-400 mb-2">Iterations ({loop.quickConfig.iterations.length})</p>
+                    <div className="space-y-2">
+                      {loop.quickConfig.iterations.map((iter, idx) => (
+                        <div key={idx} className="bg-zinc-800/30 rounded p-2 flex justify-between items-center text-xs">
+                          <span className="text-zinc-500">Loop {iter.iterationNumber}</span>
+                          <span className="text-white">${parseFloat(iter.borrowUSD || 0).toFixed(2)} borrowed</span>
+                          <span className="text-zinc-400">{iter.ltvRatio?.toFixed(1)}% LTV</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {loop.mode === 'advanced' && loop.steps && loop.steps.length > 0 && (
+              <div className="space-y-3 mt-3">
+                {loop.steps.map((step, index) => (
+                  <div
+                    key={index}
+                    className="bg-zinc-800/50 rounded-lg p-3"
+                    data-testid={`step-${index}`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-zinc-500">Step {step.stepNumber}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          step.stepType === 'supply' ? 'bg-emerald-500/20 text-emerald-400' :
+                          step.stepType === 'borrow' ? 'bg-orange-500/20 text-orange-400' :
+                          step.stepType === 'swap' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-purple-500/20 text-purple-400'
+                        }`}>
+                          {step.stepType}
+                        </span>
+                      </div>
+                      {step.link && (
+                        <a
+                          href={step.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{step.protocol}</p>
+                        <p className="text-xs text-zinc-400">{step.asset}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-white">${parseFloat(step.usdValue || 0).toFixed(2)}</p>
+                        {step.apy > 0 && (
+                          <p className="text-xs text-emerald-400">{step.apy}% APY</p>
+                        )}
+                      </div>
+                    </div>
+                    {step.notes && (
+                      <p className="text-xs text-zinc-500 mt-2 italic">{step.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Old Protocol Breakdown for backward compatibility */}
+          {loop.protocolBreakdown && loop.protocolBreakdown.length > 0 && !loop.mode && (
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-white mb-3">Protocol Breakdown</h3>
               <div className="space-y-3">
