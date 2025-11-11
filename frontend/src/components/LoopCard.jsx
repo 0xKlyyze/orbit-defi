@@ -1,6 +1,6 @@
 import React from 'react';
-import { AlertTriangle, TrendingUp, DollarSign, Activity } from 'lucide-react';
-import { getRiskLevel } from '@/services/firebaseLoops';
+import { AlertTriangle, TrendingUp, DollarSign, Activity, Zap, Settings } from 'lucide-react';
+import { getRiskLevel } from '@/utils/loopCalculations';
 
 const LoopCard = ({ loop, onClick }) => {
   const healthFactor = parseFloat(loop.healthFactor) || 0;
