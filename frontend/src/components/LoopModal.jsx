@@ -135,13 +135,27 @@ const LoopModal = ({ loop, isOpen, onClose, onEdit, onDelete }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-4">
               <p className="text-sm font-semibold text-zinc-300 mb-2">Collateral Asset</p>
-              <p className="text-lg text-white">{loop.collateralAsset || 'N/A'}</p>
-              <p className="text-sm text-zinc-500 mt-1">Entry: {formatCurrency(loop.entryCollateralAmount || 0)}</p>
+              <p className="text-lg text-white">
+                {loop.mode === 'quick' && loop.quickConfig ? loop.quickConfig.lendingAsset :
+                 loop.mode === 'advanced' && loop.steps && loop.steps.length > 0 ? loop.steps[0].asset :
+                 loop.collateralAsset || 'N/A'}
+              </p>
+              <p className="text-sm text-zinc-500 mt-1">
+                Entry: {loop.mode === 'quick' && loop.quickConfig ? 
+                  formatCurrency(loop.quickConfig.initialDeposit?.usd || 0) :
+                  formatCurrency(loop.entryCollateralAmount || 0)}
+              </p>
             </div>
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-4">
               <p className="text-sm font-semibold text-zinc-300 mb-2">Borrowed Asset</p>
-              <p className="text-lg text-white">{loop.borrowedAsset || 'N/A'}</p>
-              <p className="text-sm text-zinc-500 mt-1">Amount: {formatCurrency(loop.borrowedAmount || 0)}</p>
+              <p className="text-lg text-white">
+                {loop.mode === 'quick' && loop.quickConfig ? 
+                  (loop.quickConfig.borrowingAsset || loop.quickConfig.lendingAsset) :
+                 loop.mode === 'advanced' && loop.steps ? 
+                  loop.steps.filter(s => s.stepType === 'borrow').map(s => s.asset).join(', ') || 'None' :
+                 loop.borrowedAsset || 'N/A'}
+              </p>
+              <p className="text-sm text-zinc-500 mt-1">Amount: {formatCurrency(loop.borrowedAmount || loop.debtValue || 0)}</p>
             </div>
           </div>
 
