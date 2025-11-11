@@ -129,6 +129,18 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
   const updateStep = (index, field, value) => {
     const updated = [...steps];
     updated[index][field] = value;
+    
+    // Auto-calculate APY for leveraged positions
+    if (updated[index].stepType === 'leveraged') {
+      const lendingAPY = parseFloat(updated[index].lendingAPY) || 0;
+      const borrowAPY = parseFloat(updated[index].borrowAPY) || 0;
+      const leverage = parseFloat(updated[index].leverage) || 1;
+      
+      // Formula: APY = L * a_L - (L-1) * a_B
+      const calculatedAPY = (leverage * lendingAPY) - ((leverage - 1) * borrowAPY);
+      updated[index].apy = calculatedAPY.toFixed(2);
+    }
+    
     setSteps(updated);
   };
 
