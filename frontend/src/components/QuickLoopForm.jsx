@@ -33,6 +33,8 @@ const QuickLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = null 
         loopName: loop.loopName || '',
         description: loop.description || '',
         tags: loop.tags?.join(', ') || '',
+        wallet: loop.wallet || '',
+        blockchain: loop.blockchain || '',
         protocol: loop.quickConfig?.protocol || '',
         lendingAsset: loop.quickConfig?.lendingAsset || '',
         borrowingAsset: loop.quickConfig?.borrowingAsset || '',
@@ -45,8 +47,24 @@ const QuickLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = null 
       if (loop.quickConfig?.iterations) {
         setIterations(loop.quickConfig.iterations);
       }
+    } else if (basicInfo) {
+      setFormData({
+        loopName: basicInfo.loopName || '',
+        description: basicInfo.description || '',
+        tags: basicInfo.tags || '',
+        wallet: basicInfo.wallet || '',
+        blockchain: basicInfo.blockchain || '',
+        protocol: '',
+        lendingAsset: '',
+        borrowingAsset: '',
+        initialDepositAmount: '',
+        initialDepositUSD: '',
+        lendingAPY: '',
+        borrowingAPY: '',
+        liquidationThreshold: '0.75'
+      });
     }
-  }, [loop, isOpen]);
+  }, [loop, basicInfo, isOpen]);
 
   useEffect(() => {
     calculateMetrics();
