@@ -110,15 +110,28 @@ const LiquidRestakingDashboard = () => {
     setIsModalOpen(true);
   };
 
+  const handleSelectMode = (mode) => {
+    setIsSelectorOpen(false);
+    if (mode === 'quick') {
+      setIsQuickFormOpen(true);
+    } else {
+      setIsAdvancedFormOpen(true);
+    }
+  };
+
   const handleEditLoop = (loop) => {
     setEditingLoop(loop || selectedLoop);
     setIsModalOpen(false);
-    setIsFormOpen(true);
+    if (loop.mode === 'quick') {
+      setIsQuickFormOpen(true);
+    } else {
+      setIsAdvancedFormOpen(true);
+    }
   };
 
   const handleAddLoop = () => {
     setEditingLoop(null);
-    setIsFormOpen(true);
+    setIsSelectorOpen(true);
   };
 
   // Calculate aggregate stats
