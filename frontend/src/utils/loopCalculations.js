@@ -118,8 +118,8 @@ export const calculateAdvancedModeMetrics = (steps) => {
   const totalCollateral = calculateTotalCollateral(steps);
   const totalBorrowed = calculateTotalBorrowed(steps);
   
-  const netEquity = totalCollateral - totalBorrowed;
-  const leverage = calculateLeverageRatio(totalCollateral, netEquity);
+  // Leverage = (Initial Collateral + Total Borrowed) / Initial Collateral
+  const leverage = totalCollateral > 0 ? (totalCollateral + totalBorrowed) / totalCollateral : 1;
   
   // For health factor, only use the first step (initial collateral)
   const collateralSteps = steps.length > 0 ? [{
@@ -138,6 +138,6 @@ export const calculateAdvancedModeMetrics = (steps) => {
     leverageRatio: leverage,
     aggregateAPY,
     healthFactor,
-    netExposure: netEquity
+    netExposure: totalCollateral - totalBorrowed
   };
 };
