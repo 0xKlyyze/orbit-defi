@@ -121,17 +121,15 @@ export const calculateAdvancedModeMetrics = (steps) => {
   const netEquity = totalCollateral - totalBorrowed;
   const leverage = calculateLeverageRatio(totalCollateral, netEquity);
   
-  // Get collateral steps for health factor
-  const collateralSteps = steps
-    .filter(step => step.stepType === 'supply' || step.stepType === 'leveraged')
-    .map(step => ({
-      usdValue: step.usdValue,
-      liquidationThreshold: step.liquidationThreshold || 0.75
-    }));
+  // For health factor, only use the first step (initial collateral)
+  const collateralSteps = steps.length > 0 ? [{
+    usdValue: steps[0].usdValue,
+    liquidationThreshold: steps[0].liquidationThreshold || 0.75
+  }] : [];
   
   const healthFactor = calculateHealthFactor(collateralSteps, totalBorrowed);
   
-  // Calculate aggregate APY from all steps
+  // Calculate aggregate APY from all steps with APY
   const aggregateAPY = calculateAggregateAPY(steps.filter(s => s.apy));
   
   return {
