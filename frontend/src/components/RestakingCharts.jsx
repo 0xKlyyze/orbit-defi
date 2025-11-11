@@ -1,6 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { getRiskLevel } from '@/services/firebaseLoops';
+import { getRiskLevel } from '@/utils/loopCalculations';
 
 const RestakingCharts = ({ loops }) => {
   const COLORS = ['#EF4444', '#F97316', '#FB923C', '#FCA5A5', '#FED7AA', '#DC2626', '#EA580C'];
