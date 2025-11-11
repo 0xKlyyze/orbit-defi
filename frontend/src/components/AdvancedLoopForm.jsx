@@ -181,7 +181,13 @@ const AdvancedLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
         apy: parseFloat(step.apy) || 0,
         liquidationThreshold: parseFloat(step.liquidationThreshold) || 0.75,
         notes: step.notes,
-        link: step.link
+        link: step.link,
+        // Include leveraged position fields
+        ...(step.stepType === 'leveraged' && {
+          lendingAPY: parseFloat(step.lendingAPY) || 0,
+          borrowAPY: parseFloat(step.borrowAPY) || 0,
+          leverage: parseFloat(step.leverage) || 1
+        })
       })),
       totalCollateral: calculatedMetrics.totalCollateral,
       totalBorrowed: calculatedMetrics.totalBorrowed,
