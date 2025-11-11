@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, ExternalLink, Edit, Trash2 } from 'lucide-react';
+import { X, ExternalLink, Edit, Trash2, Zap, Settings, Layers } from 'lucide-react';
 import { Button } from './ui/button';
-import { getRiskLevel } from '@/services/firebaseLoops';
+import { getRiskLevel } from '@/utils/loopCalculations';
 
 const LoopModal = ({ loop, isOpen, onClose, onEdit, onDelete }) => {
   if (!isOpen || !loop) return null;
