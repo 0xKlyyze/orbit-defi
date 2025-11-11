@@ -6,7 +6,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { calculateQuickModeMetrics, getRiskLevel } from '@/utils/loopCalculations';
 
-const QuickLoopForm = ({ isOpen, onClose, onSave, loop = null }) => {
+const QuickLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = null }) => {
   const [formData, setFormData] = useState({
     loopName: '',
     description: '',
