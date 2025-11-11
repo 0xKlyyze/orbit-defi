@@ -111,7 +111,8 @@ const LiquidRestakingDashboard = () => {
     setIsModalOpen(true);
   };
 
-  const handleSelectMode = (mode) => {
+  const handleSelectMode = (mode, basicInfo) => {
+    setBasicLoopInfo(basicInfo);
     setIsSelectorOpen(false);
     if (mode === 'quick') {
       setIsQuickFormOpen(true);
