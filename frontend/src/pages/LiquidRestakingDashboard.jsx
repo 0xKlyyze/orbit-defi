@@ -59,7 +59,7 @@ const LiquidRestakingDashboard = () => {
     }
 
     if (filters.chain && filters.chain !== 'all') {
-      filtered = filtered.filter(l => l.chain === filters.chain);
+      filtered = filtered.filter(l => l.blockchain === filters.chain || l.chain === filters.chain);
     }
 
     if (filters.status && filters.status !== 'All') {
