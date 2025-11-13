@@ -149,6 +149,16 @@ export const calculateAdvancedModeMetrics = (steps) => {
     } else if (step.stepType === 'borrow') {
       // Borrow: adds to debt
       totalDebt += usdValue;
+      
+      // If borrowed funds are re-supplied (used as collateral in next steps), 
+      // they contribute to collateral with their liquidation threshold
+      if (step.liquidationThreshold) {
+        collateralSteps.push({
+          usdValue: usdValue,
+          liquidationThreshold: step.liquidationThreshold
+        });
+        totalExposure += usdValue;
+      }
     } else if (step.stepType === 'leveraged') {
       // Leveraged position: synthetic collateral and debt
       const leverage = parseFloat(step.leverage) || 1;
