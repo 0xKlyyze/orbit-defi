@@ -1,4 +1,7 @@
-// Health Factor Calculation (Aave V3 formula)
+// Health Factor Calculation
+// For Advanced Loops: h = Sum(Collateral_i × t_i) / Sum(Borrowed_j)
+// For Quick Loops: h = t × (1 + (L_0 - B_n) / B)
+// For Leveraged Positions: h = (λ × t) / (λ - 1)
 export const calculateHealthFactor = (collateralSteps, borrowedTotal) => {
   if (borrowedTotal === 0) return 999;
   
@@ -10,6 +13,12 @@ export const calculateHealthFactor = (collateralSteps, borrowedTotal) => {
   }, 0);
   
   return weightedCollateral / borrowedTotal;
+};
+
+// Health Factor for Leveraged Position
+export const calculateLeveragedPositionHealthFactor = (leverage, liquidationThreshold) => {
+  if (leverage <= 1) return 999;
+  return (leverage * liquidationThreshold) / (leverage - 1);
 };
 
 // Net APY for Quick Mode (single-asset loops)
