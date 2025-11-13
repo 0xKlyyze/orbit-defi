@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import Navigation from '@/components/Navigation';
 import PositionsDashboard from '@/pages/PositionsDashboard';
 import LiquidRestakingDashboard from '@/pages/LiquidRestakingDashboard';
+import CEXStakingDashboard from '@/pages/CEXStakingDashboard';
 
 function App() {
   return (
