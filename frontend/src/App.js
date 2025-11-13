@@ -25,6 +25,7 @@ function App() {
           <Routes>
             <Route path="/" element={<PositionsDashboard />} />
             <Route path="/liquid-restaking" element={<LiquidRestakingDashboard />} />
+            <Route path="/cex-staking" element={<CEXStakingDashboard />} />
           </Routes>
         </div>
       </BrowserRouter>
