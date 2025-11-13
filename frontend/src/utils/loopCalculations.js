@@ -132,29 +132,62 @@ export const calculateQuickModeMetrics = (config) => {
 
 // Calculate Advanced Mode metrics
 export const calculateAdvancedModeMetrics = (steps) => {
-  const totalCollateral = calculateTotalCollateral(steps);
-  const totalBorrowed = calculateTotalBorrowed(steps);
+  let totalExposure = 0;
+  let totalDebt = 0;
+  const collateralSteps = [];
   
-  // Leverage = (Initial Collateral + Total Borrowed) / Initial Collateral
-  const leverage = totalCollateral > 0 ? (totalCollateral + totalBorrowed) / totalCollateral : 1;
+  steps.forEach(step => {
+    const usdValue = parseFloat(step.usdValue) || 0;
+    
+    if (step.stepType === 'supply') {
+      // Regular supply: adds to collateral
+      totalExposure += usdValue;
+      collateralSteps.push({
+        usdValue: usdValue,
+        liquidationThreshold: step.liquidationThreshold || 0.75
+      });
+    } else if (step.stepType === 'borrow') {
+      // Borrow: adds to debt
+      totalDebt += usdValue;
+    } else if (step.stepType === 'leveraged') {
+      // Leveraged position: synthetic collateral and debt
+      const leverage = parseFloat(step.leverage) || 1;
+      const syntheticCollateral = usdValue * leverage;
+      const syntheticDebt = usdValue * (leverage - 1);
+      
+      totalExposure += syntheticCollateral;
+      totalDebt += syntheticDebt;
+      
+      collateralSteps.push({
+        usdValue: syntheticCollateral,
+        liquidationThreshold: step.liquidationThreshold || 0.75
+      });
+    }
+    // Swap steps don't affect collateral or debt
+  });
   
-  // For health factor, only use the first step (initial collateral)
-  const collateralSteps = steps.length > 0 ? [{
-    usdValue: steps[0].usdValue,
-    liquidationThreshold: steps[0].liquidationThreshold || 0.75
-  }] : [];
+  // Net Equity = Total Exposure - Total Debt
+  const netEquity = totalExposure - totalDebt;
   
-  const healthFactor = calculateHealthFactor(collateralSteps, totalBorrowed);
+  // Leverage = Total Exposure / Net Equity
+  const leverage = netEquity > 0 ? totalExposure / netEquity : 1;
+  
+  // Health Factor: Sum(Collateral_i × t_i) / Total Borrowed
+  const healthFactor = calculateHealthFactor(collateralSteps, totalDebt);
   
   // Calculate aggregate APY from all steps with APY
   const aggregateAPY = calculateAggregateAPY(steps.filter(s => s.apy));
   
+  // Total collateral is just the first step (initial deposit)
+  const totalCollateral = calculateTotalCollateral(steps);
+  
   return {
     totalCollateral,
-    totalBorrowed,
+    totalBorrowed: totalDebt,
     leverageRatio: leverage,
     aggregateAPY,
     healthFactor,
-    netExposure: totalCollateral - totalBorrowed
+    netExposure: netEquity,
+    totalExposure
   };
 };
