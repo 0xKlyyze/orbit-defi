@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { BarChart3, TrendingUp, Coins } from 'lucide-react';
 
 const Navigation = () => {
   const location = useLocation();
@@ -8,7 +8,7 @@ const Navigation = () => {
   const isActive = (path) => location.pathname === path;
   
   return (
-    <nav className="flex gap-2 mb-6" data-testid="dashboard-navigation">
+    <nav className="flex gap-2 mb-6 flex-wrap" data-testid="dashboard-navigation">
       <Link
         to="/"
         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
@@ -32,6 +32,18 @@ const Navigation = () => {
       >
         <TrendingUp size={20} />
         Liquid Restaking
+      </Link>
+      <Link
+        to="/cex-staking"
+        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+          isActive('/cex-staking')
+            ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-500/20'
+            : 'bg-zinc-900/40 text-zinc-400 hover:bg-zinc-800 hover:text-white border border-red-500/20'
+        }`}
+        data-testid="nav-cex-staking"
+      >
+        <Coins size={20} />
+        CEX Staking
       </Link>
     </nav>
   );
