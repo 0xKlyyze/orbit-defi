@@ -86,15 +86,21 @@ export const getRiskLevel = (healthFactor) => {
 };
 
 // Calculate Quick Mode iterations
+// Formula: h = t × (1 + (L_0 - B_n) / B)
+// where L_0 = initial deposit, B_n = last borrow, B = total borrowed, t = liquidation threshold
 export const calculateQuickModeMetrics = (config) => {
   const initialDeposit = parseFloat(config.initialDeposit?.usd) || 0;
   let totalBorrowed = 0;
+  let lastBorrow = 0;
   
   // Calculate cumulative borrowed from iterations
   if (config.iterations && config.iterations.length > 0) {
-    config.iterations.forEach(iteration => {
+    config.iterations.forEach((iteration, index) => {
       const borrowUSD = parseFloat(iteration.borrowUSD) || 0;
       totalBorrowed += borrowUSD;
+      if (index === config.iterations.length - 1) {
+        lastBorrow = borrowUSD;
+      }
     });
   }
   
@@ -108,10 +114,12 @@ export const calculateQuickModeMetrics = (config) => {
   );
   
   const liquidationThreshold = parseFloat(config.liquidationThreshold) || 0.75;
-  const healthFactor = calculateHealthFactor(
-    [{ usdValue: initialDeposit, liquidationThreshold }],
-    totalBorrowed
-  );
+  
+  // Quick Loop Health Factor: h = t × (1 + (L_0 - B_n) / B)
+  let healthFactor = 999;
+  if (totalBorrowed > 0) {
+    healthFactor = liquidationThreshold * (1 + (initialDeposit - lastBorrow) / totalBorrowed);
+  }
   
   return {
     totalCollateral: initialDeposit,
