@@ -138,23 +138,28 @@ export const calculateQuickModeMetrics = (config) => {
  * Borrow steps go exclusively to debt (unless truly resupplied—advanced tracing not in MVP!).
  */
 export const calculateAdvancedModeMetrics = (steps) => {
-  let totalExposure = 0;
-  let totalDebt = 0;
+  let totalExposure = 0; // Sum of all actual and synthetic supplied/staked collateral
+  let totalDebt = 0;     // Sum of all actual borrowed plus synthetic levered debt
   const collateralSteps = [];
 
-  steps.forEach(step => {
+  steps.forEach((step) => {
     const usdValue = parseFloat(step.usdValue) || 0;
 
-    if (step.stepType === 'supply' || step.stepType === 'stake' || step.stepType === 'restake') {
-      // Collateral: supply, stake, or restake
+    // True supply as collateral (lending/staking/restake)
+    if (
+      step.stepType === 'supply' ||
+      step.stepType === 'stake' ||
+      step.stepType === 'restake'
+    ) {
       totalExposure += usdValue;
       collateralSteps.push({
         usdValue,
-        liquidationThreshold: step.liquidationThreshold || 0.75
+        liquidationThreshold: parseFloat(step.liquidationThreshold) || 0.75,
       });
-    } 
+    }
+
+    // Leveraged positions: add synthetic collateral and synthetic debt at inputted threshold
     else if (step.stepType === 'leveraged') {
-      // Leveraged position: synthetic collateral and debt
       const leverage = parseFloat(step.leverage) || 1;
       const syntheticCollateral = usdValue * leverage;
       const syntheticDebt = usdValue * (leverage - 1);
@@ -162,38 +167,68 @@ export const calculateAdvancedModeMetrics = (steps) => {
       totalDebt += syntheticDebt;
       collateralSteps.push({
         usdValue: syntheticCollateral,
-        liquidationThreshold: step.liquidationThreshold || 0.75
+        liquidationThreshold: parseFloat(step.liquidationThreshold) || 0.75,
       });
     }
+
+    // Pure borrow steps: add only to debt, NEVER to collateral
     else if (step.stepType === 'borrow') {
-      // Debt: borrowed amounts only
       totalDebt += usdValue;
-      // Do NOT add borrowed tokens to collateral unless you implement actual tracking of resupply.
+      // DO NOT contribute borrowed funds to collateral here.
     }
-    // Swap, Bridge, Claim/Compound, etc. do NOT affect collateral or debt for healthFactor/leverage purposes
+
+    // Ignore swap, bridge, claim/compound for exposure/debt calculations.
   });
 
-  // Net equity for leverage: totalExposure - totalDebt
+  // Net equity and leverage calculations
   const netEquity = totalExposure - totalDebt;
-  // Leverage: totalExposure / netEquity (default 1 if netEquity <= 0)
   const leverageRatio = netEquity > 0 ? totalExposure / netEquity : 1;
 
-  // Health Factor: Weighted sum of (collateral USD × threshold) / totalDebt
+  // Health Factor: per DeFi convention
   const healthFactor = calculateHealthFactor(collateralSteps, totalDebt);
 
-  // Aggregate APY from all steps with APY present
-  const aggregateAPY = calculateAggregateAPY(steps.filter(s => s.apy));
+  // Aggregate APY must only benchmark against initial deposit
+  const initialDepositStep =
+    steps.find(
+      (step) =>
+        step.stepType === 'supply' ||
+        step.stepType === 'stake' ||
+        step.stepType === 'restake'
+    );
+  const initialDeposit = initialDepositStep
+    ? parseFloat(initialDepositStep.usdValue) || 0
+    : 0;
+  const aggregateAPY =
+    initialDeposit > 0
+      ? steps
+          .filter(
+            (step) =>
+              step.stepType === 'supply' ||
+              step.stepType === 'stake' ||
+              step.stepType === 'restake' ||
+              step.stepType === 'leveraged'
+          )
+          .reduce(
+            (sum, step) =>
+              sum +
+              ((parseFloat(step.apy) || 0) *
+                (parseFloat(step.usdValue) || 0) /
+                initialDeposit),
+            0
+          )
+      : 0;
 
-  // The initial deposit/first supply step is "total collateral" (may be ambiguous in advanced, but matches previous convention)
-  const totalCollateral = calculateTotalCollateral(steps);
+  const totalCollateral = initialDeposit; // Per convention, that's the only "real" user capital
+  const totalBorrowed = totalDebt;
 
   return {
     totalCollateral,
-    totalBorrowed: totalDebt,
+    totalBorrowed,
     leverageRatio,
     aggregateAPY,
     healthFactor,
     netExposure: netEquity,
-    totalExposure
+    totalExposure,
   };
 };
+
