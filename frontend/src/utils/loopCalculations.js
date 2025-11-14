@@ -175,30 +175,28 @@ export const calculateAdvancedModeMetrics = (steps) => {
     // Swaps, bridge, etc. are ignored for exposure/risk.
   });
 
-  // Net equity calculation
-  netEquity = totalExposure - totalDebt;
-  const leverageRatio = calculateLeverageRatio(totalExposure, netEquity);
+  // Net Equity = Total Exposure - Total Debt
+const netExposure = totalExposure - totalDebt; // Rename for consistency!
+const leverageRatio = calculateLeverageRatio(totalExposure, netExposure);
 
-  // Health Factor
-  const healthFactor = calculateHealthFactor(collateralSteps, totalDebt);
+// Health Factor
+const healthFactor = calculateHealthFactor(collateralSteps, totalDebt);
 
-  // Aggregate APY using only the initial deposit
-  const aggregateAPY = calculateAggregateAPY(steps);
+// Aggregate APY using only the initial deposit
+const aggregateAPY = calculateAggregateAPY(steps);
 
-  // For display: first supply step is user's initial actual deposit
-  const totalCollateral = steps.find(s =>
-    s.stepType === 'supply' || s.stepType === 'stake' || s.stepType === 'restake'
-  );
-  const initialCollateral = totalCollateral ? parseFloat(totalCollateral.usdValue) || 0 : 0;
+// For display: first supply step is user's initial actual deposit
+const totalCollateral = steps.find(s =>
+  s.stepType === 'supply' || s.stepType === 'stake' || s.stepType === 'restake'
+);
+const initialCollateral = totalCollateral ? parseFloat(totalCollateral.usdValue) || 0 : 0;
 
-  return {
-    totalCollateral: initialCollateral,
-    totalBorrowed: totalDebt,
-    leverageRatio,
-    aggregateAPY,
-    healthFactor,
-    netExposure,
-    totalExposure
-  };
+return {
+  totalCollateral: initialCollateral,
+  totalBorrowed: totalDebt,
+  leverageRatio,
+  aggregateAPY,
+  healthFactor,
+  netExposure,       // <<==== Now matches variable and UI expectations!
+  totalExposure
 };
-
