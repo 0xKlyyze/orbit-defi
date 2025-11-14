@@ -200,3 +200,4 @@ return {
   netExposure,       // <<==== Now matches variable and UI expectations!
   totalExposure
 };
+};
