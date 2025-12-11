@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
+from backend.routers import dashboard
 import logging
 from pathlib import Path
 
@@ -25,6 +26,7 @@ async def health_check():
 
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(dashboard.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
