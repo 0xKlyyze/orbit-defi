@@ -14,32 +14,32 @@
 # Main and testing agents must follow this exact format to maintain testing data. 
 # The testing data must be entered in yaml format Below is the data structure:
 # 
-## user_problem_statement: {problem_statement}
+## user_problem_statement: Build the new AI-Powered Dashboard for Orbit.
 ## backend:
-##   - task: "Task name"
-##     implemented: true
-##     working: true  # or false or "NA"
-##     file: "file_path.py"
+##   - task: "Setup Dashboard API Endpoints"
+##     implemented: false
+##     working: "NA"
+##     file: "/app/backend/server.py"
 ##     stuck_count: 0
-##     priority: "high"  # or "medium" or "low"
-##     needs_retesting: false
+##     priority: "high"
+##     needs_retesting: true
 ##     status_history:
-##         -working: true  # or false or "NA"
-##         -agent: "main"  # or "testing" or "user"
-##         -comment: "Detailed comment about status"
+##         -working: "NA"
+##         -agent: "main"
+##         -comment: "Initial setup."
 ##
 ## frontend:
-##   - task: "Task name"
-##     implemented: true
-##     working: true  # or false or "NA"
-##     file: "file_path.js"
+##   - task: "Create Dashboard Page"
+##     implemented: false
+##     working: "NA"
+##     file: "/app/frontend/src/pages/OrbitAIDashboard.jsx"
 ##     stuck_count: 0
-##     priority: "high"  # or "medium" or "low"
-##     needs_retesting: false
+##     priority: "high"
+##     needs_retesting: true
 ##     status_history:
-##         -working: true  # or false or "NA"
-##         -agent: "main"  # or "testing" or "user"
-##         -comment: "Detailed comment about status"
+##         -working: "NA"
+##         -agent: "main"
+##         -comment: "Initial setup."
 ##
 ## metadata:
 ##   created_by: "main_agent"
@@ -49,16 +49,15 @@
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Task name 1"
-##     - "Task name 2"
-##   stuck_tasks:
-##     - "Task name with persistent issues"
+##     - "Setup Dashboard API Endpoints"
+##     - "Create Dashboard Page"
+##   stuck_tasks: []
 ##   test_all: false
-##   test_priority: "high_first"  # or "sequential" or "stuck_first"
+##   test_priority: "sequential"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##     -agent: "main"
+##     -message: "Starting implementation of AI Dashboard."
 
 # Protocol Guidelines for Main agent
 #
