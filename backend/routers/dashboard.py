@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from backend.models import ChatRequest, ChatResponse, GenerateAnalysisRequest, AnalysisResponse, Insight, PortfolioStats
-from backend.services.gemini_service import gemini_service
+from models import ChatRequest, ChatResponse, GenerateAnalysisRequest, AnalysisResponse, Insight, PortfolioStats
+from services.gemini_service import gemini_service
 import logging
 from datetime import datetime
 import uuid
