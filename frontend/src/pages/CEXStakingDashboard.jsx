@@ -1,13 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, DollarSign, TrendingUp, Activity, Search, Unlock, Lock, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Plus, 
+  DollarSign, 
+  TrendingUp, 
+  Activity, 
+  Search, 
+  Unlock, 
+  Lock, 
+  Clock, 
+  Wallet, 
+  Layers, 
+  MoreVertical, 
+  ChevronDown,
+  ArrowUpRight
+} from 'lucide-react';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip as RechartsTooltip 
+} from 'recharts';
 import { toast } from 'sonner';
-import CEXPositionCard from '@/components/CEXPositionCard';
+
+// --- IMPORTS FROM SOURCE A (Functional) ---
 import CEXPositionForm from '@/components/CEXPositionForm';
-import { getCEXPositions, addCEXPosition, updateCEXPosition, deleteCEXPosition, calculateWithdrawalStatus } from '@/services/firebaseCEX';
+import { 
+  getCEXPositions, 
+  addCEXPosition, 
+  updateCEXPosition, 
+  deleteCEXPosition, 
+  calculateWithdrawalStatus 
+} from '@/services/firebaseCEX';
+
+// --- DESIGN SYSTEM CONSTANTS ---
+const COLORS = {
+  bg: '#050505',
+  card: '#141414',
+  cardHighlight: '#1A1A1A',
+  primary: '#FFE066', // Orbit Yellow
+  cyan: '#33FFCC',
+  blue: '#3385FF',
+  orange: '#FF6633',
+  red: '#FF4444',
+  textMain: '#FFFFFF',
+  textMuted: '#888888',
+  textDark: '#111111'
+};
+
+// --- SUB-COMPONENTS ---
+
+// 1. Withdrawal Status Badge/Bar
+const WithdrawalStatusBar = ({ position }) => {
+  const { status, daysRemaining } = calculateWithdrawalStatus(position);
+  
+  let color = COLORS.textMuted;
+  let label = status;
+  let barColor = '#333';
+  let width = '100%';
+
+  if (status === 'Can Withdraw Now') {
+    color = COLORS.cyan;
+    barColor = COLORS.cyan;
+  } else if (status === 'Locked') {
+    color = COLORS.orange;
+    barColor = COLORS.orange;
+    // visual approximation of time remaining if we had total duration, 
+    // for now just full bar for locked
+  } else if (status === 'Pending') {
+    color = COLORS.primary;
+    barColor = COLORS.primary;
+  }
+
+  return (
+    <div className="w-full mt-2">
+      <div className="flex justify-between text-xs mb-1">
+        <span style={{ color: COLORS.textMuted }}>
+          {status === 'Locked' && daysRemaining ? `${daysRemaining} days left` : 'Status'}
+        </span>
+        <span style={{ color: color, fontWeight: 600 }}>{label}</span>
+      </div>
+      <div className="h-2 w-full bg-[#222] rounded-full overflow-hidden">
+        <div 
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: width, backgroundColor: barColor }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// 2. CEX Position Card
+const CEXPositionCard = ({ position, onClick, onEdit, onDelete }) => {
+  const usdValue = parseFloat(position.usdValue) || 0;
+  const apy = parseFloat(position.apy) || 0;
+  const amount = parseFloat(position.amount) || 0;
+  
+  // Handle tags
+  const tags = typeof position.tags === 'string' 
+    ? position.tags.split(',').filter(t => t.trim() !== '') 
+    : [];
+
+  return (
+    <div 
+      className="group relative p-6 rounded-[24px] transition-all duration-300 hover:-translate-y-1"
+      style={{ 
+        backgroundColor: COLORS.card,
+        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
+      }}
+    >
+      {/* Card Header */}
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-white text-lg font-medium tracking-tight truncate max-w-[180px]">
+              {position.exchange}
+            </h3>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#222] text-[#888] border border-[#333]">
+              {position.asset}
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#222] text-[#888] border border-[#333]">
+               Staking
+            </span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+            {/* Edit/Action Menu Placeholder */}
+            <button 
+                onClick={(e) => { e.stopPropagation(); onEdit(position); }}
+                className="text-[#444] hover:text-white transition-colors"
+            >
+             <MoreVertical size={20} />
+            </button>
+        </div>
+      </div>
+
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <p className="text-[#888] text-xs uppercase tracking-wider mb-1">Value (USD)</p>
+          <p className="text-white text-xl font-medium">${usdValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        </div>
+        <div>
+          <p className="text-[#888] text-xs uppercase tracking-wider mb-1">APY</p>
+          <p style={{ color: COLORS.cyan }} className="text-xl font-medium">{apy.toFixed(2)}%</p>
+        </div>
+        <div className="col-span-2">
+          <p className="text-[#888] text-xs uppercase tracking-wider mb-1">Amount</p>
+          <p className="text-[#ddd] text-lg font-medium">
+            {amount.toLocaleString()} <span className="text-sm text-[#666]">{position.asset}</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Status Section */}
+      <div className="bg-[#1A1A1A] rounded-xl p-4 border border-[#222]">
+        <WithdrawalStatusBar position={position} />
+      </div>
+
+      {/* Tags & Footer */}
+      <div className="mt-4 flex justify-between items-center">
+        <div className="flex gap-2 flex-wrap">
+          {tags.slice(0, 3).map((tag, i) => (
+            <span key={i} className="text-[10px] text-[#666]">#{tag.trim()}</span>
+          ))}
+        </div>
+        {/* Delete Button (Subtle) */}
+        <button 
+            onClick={(e) => { e.stopPropagation(); onDelete(position.id); }}
+            className="text-[10px] text-red-900 hover:text-red-500 transition-colors"
+        >
+            Delete
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN DASHBOARD ---
 
 const CEXStakingDashboard = () => {
+  // --- STATE FROM SOURCE A ---
   const [positions, setPositions] = useState([]);
   const [filteredPositions, setFilteredPositions] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -17,20 +192,24 @@ const CEXStakingDashboard = () => {
   const [withdrawalFilter, setWithdrawalFilter] = useState('All');
   const [showWithdrawn, setShowWithdrawn] = useState(false);
 
+  // --- ORBIT UI STATE ---
+  const [activeTab, setActiveTab] = useState('active'); // Maps to showWithdrawn logic
+
+  // --- EFFECTS ---
   useEffect(() => {
     loadPositions();
   }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [positions, searchTerm, withdrawalFilter, showWithdrawn]);
+  }, [positions, searchTerm, withdrawalFilter, showWithdrawn, activeTab]);
 
+  // --- LOGIC ---
   const loadPositions = async () => {
     try {
       setLoading(true);
       const data = await getCEXPositions();
       setPositions(data);
-      toast.success('Positions loaded successfully');
     } catch (error) {
       console.error('Error loading positions:', error);
       toast.error('Failed to load positions');
@@ -42,12 +221,16 @@ const CEXStakingDashboard = () => {
   const applyFilters = () => {
     let filtered = [...positions];
 
-    // Filter by withdrawn status
-    if (!showWithdrawn) {
-      filtered = filtered.filter(p => p.status === 'Active');
+    // Tab Logic (Visual Tab -> Logical Filter)
+    if (activeTab === 'history') {
+        // Show only withdrawn or closed positions
+        filtered = filtered.filter(p => p.status === 'Withdrawn' || p.status === 'Closed');
+    } else {
+        // Active Tab: Show active positions
+        filtered = filtered.filter(p => p.status === 'Active');
     }
 
-    // Filter by withdrawal status
+    // Withdrawal Status Filter
     if (withdrawalFilter !== 'All') {
       filtered = filtered.filter(p => {
         const withdrawalInfo = calculateWithdrawalStatus(p);
@@ -66,7 +249,7 @@ const CEXStakingDashboard = () => {
       );
     }
 
-    // Sort by withdrawal priority (Can Withdraw Now first)
+    // Sort by priority (Can Withdraw Now first)
     filtered.sort((a, b) => {
       const aInfo = calculateWithdrawalStatus(a);
       const bInfo = calculateWithdrawalStatus(b);
@@ -96,11 +279,6 @@ const CEXStakingDashboard = () => {
     }
   };
 
-  const handleEditPosition = (position) => {
-    setEditingPosition(position);
-    setIsFormOpen(true);
-  };
-
   const handleDeletePosition = async (id) => {
     if (window.confirm('Are you sure you want to delete this position?')) {
       try {
@@ -119,172 +297,273 @@ const CEXStakingDashboard = () => {
     setIsFormOpen(true);
   };
 
-  // Calculate aggregated stats
+  // --- STATS CALCULATION ---
   const activePositions = positions.filter(p => p.status === 'Active');
   const totalValue = activePositions.reduce((sum, p) => sum + (parseFloat(p.usdValue) || 0), 0);
+  
   const averageAPY = activePositions.length > 0
     ? activePositions.reduce((sum, p) => sum + (parseFloat(p.apy) || 0), 0) / activePositions.length
     : 0;
 
-  const withdrawableNow = activePositions.filter(p => {
+  const withdrawableNowCount = activePositions.filter(p => {
     const info = calculateWithdrawalStatus(p);
     return info.status === 'Can Withdraw Now';
   }).length;
 
+  // Pie Chart Data: Allocation by Asset
+  const assetDistributionData = useMemo(() => {
+    const distribution = {};
+    activePositions.forEach(p => {
+        const val = parseFloat(p.usdValue) || 0;
+        if(val > 0) {
+            distribution[p.asset] = (distribution[p.asset] || 0) + val;
+        }
+    });
+    
+    // Convert to array and take top 4 + others
+    let data = Object.keys(distribution).map(asset => ({
+        name: asset,
+        value: distribution[asset]
+    })).sort((a, b) => b.value - a.value);
+
+    // Color palette for chart
+    const chartColors = [COLORS.cyan, COLORS.primary, COLORS.blue, COLORS.orange, COLORS.red];
+
+    return data.map((d, i) => ({
+        ...d,
+        color: chartColors[i % chartColors.length]
+    }));
+  }, [activePositions]);
+
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-950 to-red-950/20 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <div className="text-[#FFE066] text-xl animate-pulse">Loading CEX Dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8" data-testid="cex-staking-dashboard">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-white mb-2">CEX Staking</h2>
-          <p className="text-zinc-400">Track your centralized exchange staking positions</p>
-        </div>
-        <Button
-          onClick={handleAddPosition}
-          data-testid="add-cex-position-button"
-          className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white shadow-lg shadow-red-500/20 px-6 py-6 text-lg"
-        >
-          <Plus className="mr-2" size={20} />
-          Add Position
-        </Button>
-      </div>
+    <div className="min-h-screen font-sans selection:bg-[#FFE066] selection:text-black" style={{ backgroundColor: COLORS.bg }}>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-red-500/20 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-zinc-400 text-sm font-medium">Total Value</h3>
-            <DollarSign className="text-red-400" size={20} />
-          </div>
-          <p className="text-3xl font-bold text-white">
-            ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-orange-500/20 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-zinc-400 text-sm font-medium">Average APY</h3>
-            <TrendingUp className="text-orange-400" size={20} />
-          </div>
-          <p className="text-3xl font-bold text-white">
-            {averageAPY.toFixed(2)}%
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-red-500/20 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-zinc-400 text-sm font-medium">Active Positions</h3>
-            <Activity className="text-red-400" size={20} />
-          </div>
-          <p className="text-3xl font-bold text-white">
-            {activePositions.length}
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-emerald-500/20 rounded-xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-zinc-400 text-sm font-medium">Withdrawable Now</h3>
-            <Unlock className="text-emerald-400" size={20} />
-          </div>
-          <p className="text-3xl font-bold text-white">
-            {withdrawableNow}
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-zinc-900/40 backdrop-blur-md border border-red-500/20 rounded-xl p-6 sticky top-0 z-10">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500" size={18} />
-              <Input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by exchange, asset, tags, or notes..."
-                className="pl-10 bg-zinc-900/50 border-red-500/30 text-white placeholder:text-zinc-600 focus:border-red-500 focus:ring-red-500/20"
-              />
-            </div>
+      {/* 2. Main Content */}
+      <main className="pl-20 p-8 max-w-[1600px] mx-auto">
+        
+        {/* Header Section */}
+        <header className="flex justify-between items-end mb-10">
+          <div>
+            <h1 className="text-white text-3xl font-bold tracking-tight mb-2">CEX Staking</h1>
+            <p className="text-[#666] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#33FFCC]"></span>
+              Centralized Exchange Positions
+            </p>
           </div>
           
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              onClick={() => setWithdrawalFilter('All')}
-              variant={withdrawalFilter === 'All' ? 'default' : 'outline'}
-              className={withdrawalFilter === 'All' ? 'bg-red-600 hover:bg-red-500' : 'border-zinc-700 text-zinc-400 hover:bg-zinc-800'}
-            >
-              All
-            </Button>
-            <Button
-              onClick={() => setWithdrawalFilter('Can Withdraw Now')}
-              variant={withdrawalFilter === 'Can Withdraw Now' ? 'default' : 'outline'}
-              className={withdrawalFilter === 'Can Withdraw Now' ? 'bg-emerald-600 hover:bg-emerald-500' : 'border-zinc-700 text-zinc-400 hover:bg-zinc-800'}
-            >
-              <Unlock size={16} className="mr-1" />
-              Can Withdraw
-            </Button>
-            <Button
-              onClick={() => setWithdrawalFilter('Pending')}
-              variant={withdrawalFilter === 'Pending' ? 'default' : 'outline'}
-              className={withdrawalFilter === 'Pending' ? 'bg-yellow-600 hover:bg-yellow-500' : 'border-zinc-700 text-zinc-400 hover:bg-zinc-800'}
-            >
-              <Clock size={16} className="mr-1" />
-              Pending
-            </Button>
-            <Button
-              onClick={() => setWithdrawalFilter('Locked')}
-              variant={withdrawalFilter === 'Locked' ? 'default' : 'outline'}
-              className={withdrawalFilter === 'Locked' ? 'bg-red-600 hover:bg-red-500' : 'border-zinc-700 text-zinc-400 hover:bg-zinc-800'}
-            >
-              <Lock size={16} className="mr-1" />
-              Locked
-            </Button>
-            <Button
-              onClick={() => setShowWithdrawn(!showWithdrawn)}
-              variant={showWithdrawn ? 'default' : 'outline'}
-              className={showWithdrawn ? 'bg-zinc-600 hover:bg-zinc-500' : 'border-zinc-700 text-zinc-400 hover:bg-zinc-800'}
-            >
-              Show Withdrawn
-            </Button>
-          </div>
-        </div>
-      </div>
+          <div className="flex gap-4 items-center">
+            {/* Search Input (Styled like Orbit) */}
+            <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search size={16} className="text-[#666] group-focus-within:text-[#FFE066] transition-colors" />
+                </div>
+                <input 
+                    type="text"
+                    placeholder="Search assets..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-12 pl-11 pr-6 rounded-full bg-transparent border border-[#333] text-white focus:border-[#FFE066] focus:outline-none transition-colors w-48 hover:bg-[#141414]"
+                />
+            </div>
 
-      {/* Positions Grid */}
-      {filteredPositions.length === 0 ? (
-        <div className="bg-zinc-900/40 backdrop-blur-md border border-red-500/20 rounded-xl p-12 text-center">
-          <p className="text-zinc-500 text-lg mb-4">No positions found</p>
-          <p className="text-zinc-600 mb-6">Start tracking your CEX staking positions</p>
-          <Button
-            onClick={handleAddPosition}
-            className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white"
+            {/* Status Filter Dropdown */}
+            <div className="relative">
+              <button className="h-12 px-6 rounded-full border border-[#333] text-white flex items-center gap-2 hover:bg-[#141414] transition-colors min-w-[160px] justify-between">
+                <div className="flex items-center gap-2">
+                  {withdrawalFilter === 'All' && <Layers size={16} className="text-[#888]" />}
+                  {withdrawalFilter === 'Can Withdraw Now' && <Unlock size={16} className="text-[#33FFCC]" />}
+                  {withdrawalFilter === 'Locked' && <Lock size={16} className="text-[#FF6633]" />}
+                  {withdrawalFilter === 'Pending' && <Clock size={16} className="text-[#FFE066]" />}
+                  <span>{withdrawalFilter === 'All' ? 'All Status' : withdrawalFilter}</span>
+                </div>
+                <ChevronDown size={14} className="text-[#444]" />
+              </button>
+              <select 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                value={withdrawalFilter}
+                onChange={(e) => setWithdrawalFilter(e.target.value)}
+              >
+                <option value="All">All Status</option>
+                <option value="Can Withdraw Now">Can Withdraw Now</option>
+                <option value="Pending">Pending</option>
+                <option value="Locked">Locked</option>
+              </select>
+            </div>
+            
+            {/* Primary Action */}
+            <button 
+              onClick={handleAddPosition}
+              className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
+              style={{ backgroundColor: COLORS.primary, color: COLORS.textDark }}
+            >
+              <Plus size={20} />
+              Add Position
+            </button>
+          </div>
+        </header>
+
+        {/* Hero / Bento Grid Summary */}
+        <section className="grid grid-cols-12 gap-6 mb-12">
+          
+          {/* Card 1: Total Value (Hero Yellow) */}
+          <div 
+            className="col-span-12 lg:col-span-4 p-8 rounded-[32px] flex flex-col justify-between relative overflow-hidden transition-all hover:scale-[1.01]"
+            style={{ backgroundColor: COLORS.primary }}
           >
-            <Plus className="mr-2" size={18} />
-            Add Your First Position
-          </Button>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2 opacity-80">
+                <DollarSign size={20} className="text-black" />
+                <span className="text-black font-medium text-sm uppercase tracking-wide">Total Staked Value</span>
+              </div>
+              <h2 className="text-5xl font-bold text-black tracking-tight mb-4">
+                ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </h2>
+              <div className="inline-flex items-center gap-1 bg-black/10 px-3 py-1 rounded-full text-black text-sm font-medium">
+                <Activity size={16} />
+                <span>{activePositions.length} Active Positions</span>
+              </div>
+            </div>
+            {/* Decoration */}
+            <div className="absolute right-[-20px] bottom-[-40px] w-48 h-48 bg-white/20 rounded-full blur-2xl"></div>
+          </div>
+
+          {/* Card 2: APY & Unlocked Metrics (Standard Dark) */}
+          <div className="col-span-12 md:col-span-6 lg:col-span-5 p-8 rounded-[32px] bg-[#141414] border border-[#222]">
+            <div className="flex justify-between mb-8">
+              <div>
+                <p className="text-[#888] text-sm uppercase mb-1">Average APY</p>
+                <p className="text-white text-3xl font-semibold flex items-center gap-2">
+                   <TrendingUp size={24} className="text-[#33FFCC]" />
+                   {averageAPY.toFixed(2)}%
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[#888] text-sm uppercase mb-1">Withdrawable Now</p>
+                <p className={`text-3xl font-semibold ${withdrawableNowCount > 0 ? 'text-[#33FFCC]' : 'text-[#666]'}`}>
+                  {withdrawableNowCount}
+                </p>
+              </div>
+            </div>
+            
+            {/* Visualization of Unlock Status */}
+            <div>
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-[#666]">Liquidity Status</span>
+              </div>
+              {/* Simple visual bar approximating locked vs unlocked count */}
+              <div className="w-full h-3 bg-[#222] rounded-full overflow-hidden flex">
+                 <div className="h-full bg-[#33FFCC]" style={{ width: `${(withdrawableNowCount / (activePositions.length || 1)) * 100}%` }}></div>
+              </div>
+              <div className="flex gap-4 mt-3">
+                 <div className="flex items-center gap-2 text-xs text-[#666]">
+                    <div className="w-2 h-2 rounded-full bg-[#33FFCC]"></div> Liquid
+                 </div>
+                 <div className="flex items-center gap-2 text-xs text-[#666]">
+                    <div className="w-2 h-2 rounded-full bg-[#222]"></div> Locked
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Asset Distribution Chart */}
+          <div className="col-span-12 md:col-span-6 lg:col-span-3 p-6 rounded-[32px] bg-[#141414] border border-[#222] flex flex-col items-center justify-center relative">
+             <h3 className="absolute top-6 left-6 text-white text-sm font-medium">Asset Allocation</h3>
+             <div className="w-full h-[160px] mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={assetDistributionData.length > 0 ? assetDistributionData : [{name:'None', value:1, color:'#333'}]}
+                      innerRadius={50}
+                      outerRadius={70}
+                      paddingAngle={5}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {(assetDistributionData.length > 0 ? assetDistributionData : [{name:'None', value:1, color:'#333'}]).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip 
+                      contentStyle={{ backgroundColor: '#222', borderColor: '#333', borderRadius: '8px' }}
+                      itemStyle={{ color: '#fff' }}
+                      formatter={(value) => `$${value.toLocaleString()}`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+             </div>
+             {/* Center Text in Donut */}
+             <div className="absolute inset-0 flex items-center justify-center pt-4 pointer-events-none">
+                <div className="text-center">
+                   <span className="block text-2xl font-bold text-white">{assetDistributionData.length}</span>
+                   <span className="text-[10px] uppercase text-[#666]">Assets</span>
+                </div>
+             </div>
+          </div>
+        </section>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-8 border-b border-[#222] mb-8">
+          <button 
+            onClick={() => setActiveTab('active')}
+            className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'active' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
+          >
+            Active Positions ({positions.filter(p => p.status === 'Active').length})
+            {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
+          </button>
+          <button 
+            onClick={() => setActiveTab('history')}
+            className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'history' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
+          >
+            History / Withdrawn
+            {activeTab === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
+          </button>
+          <button 
+             className="ml-auto flex items-center gap-2 text-[#666] hover:text-white text-sm"
+          >
+            <TrendingUp size={14} />
+            Analytics View
+          </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPositions.map(position => (
-            <CEXPositionCard
-              key={position.id}
-              position={position}
-              onClick={() => {}}
-              onEdit={handleEditPosition}
+
+        {/* Positions Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredPositions.map((position) => (
+            <CEXPositionCard 
+              key={position.id} 
+              position={position} 
+              onEdit={() => {
+                setEditingPosition(position);
+                setIsFormOpen(true);
+              }}
               onDelete={handleDeletePosition}
             />
           ))}
-        </div>
-      )}
 
-      {/* Form */}
+          {/* "Add New" Placeholder Card */}
+          <button 
+            onClick={handleAddPosition}
+            className="group border border-dashed border-[#333] rounded-[24px] flex flex-col items-center justify-center min-h-[300px] hover:bg-[#111] hover:border-[#444] transition-all"
+          >
+            <div className="w-16 h-16 rounded-full bg-[#1A1A1A] flex items-center justify-center mb-4 group-hover:bg-[#222] transition-colors">
+              <Plus size={32} className="text-[#FFE066]" />
+            </div>
+            <span className="text-white font-medium">Add New Position</span>
+            <span className="text-[#666] text-sm mt-2">Manual Entry</span>
+          </button>
+        </section>
+
+      </main>
+
+      {/* --- HIDDEN FUNCTIONAL MODAL --- */}
       <CEXPositionForm
         isOpen={isFormOpen}
         onClose={() => {

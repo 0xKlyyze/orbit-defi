@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Calculator, ChevronUp, ChevronDown, Save, Layers, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { calculateAdvancedModeMetrics, getRiskLevel } from '@/utils/loopCalculations';
 
 const STEP_TYPES = [

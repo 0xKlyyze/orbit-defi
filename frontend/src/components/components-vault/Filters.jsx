@@ -1,8 +1,8 @@
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Label } from './ui/label';
-import { Switch } from './ui/switch';
-import { Button } from './ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Label } from '../ui/label';
+import { Switch } from '../ui/switch';
+import { Button } from '../ui/button';
 import { Filter, X } from 'lucide-react';
 
 const Filters = ({ filters, onFilterChange, positions }) => {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Calculator } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
 import { calculateQuickModeMetrics, getRiskLevel } from '@/utils/loopCalculations';
 
 const QuickLoopForm = ({ isOpen, onClose, onSave, loop = null, basicInfo = null }) => {

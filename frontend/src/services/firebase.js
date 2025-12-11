@@ -16,11 +16,12 @@ const db = getFirestore(app);
 
 export const addPosition = async (position) => {
   try {
+    const createdAt = new Date().toISOString();
     const docRef = await addDoc(collection(db, 'positions'), {
       ...position,
-      createdAt: new Date().toISOString()
+      createdAt
     });
-    return { id: docRef.id, ...position };
+    return { id: docRef.id, ...position, createdAt };
   } catch (error) {
     console.error('Error adding position:', error);
     throw error;
@@ -53,7 +54,7 @@ export const deletePosition = async (id) => {
 
 export const getPositions = async () => {
   try {
-    const q = query(collection(db, 'positions'), orderBy('entryDate', 'desc'));
+    const q = query(collection(db, 'positions'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     const positions = [];
     querySnapshot.forEach((doc) => {
