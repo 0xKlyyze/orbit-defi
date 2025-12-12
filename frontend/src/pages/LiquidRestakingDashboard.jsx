@@ -211,6 +211,18 @@ const OrbitLoopDashboard = () => {
     loadLoops();
   }, []);
 
+  // Quick-open Create Loop form from dashboard pill
+  useEffect(() => {
+    try {
+      const flag = localStorage.getItem('openCreateLoopModal');
+      if (flag === 'true') {
+        setEditingLoop(null);
+        setIsCreateModalOpen(true);
+        localStorage.removeItem('openCreateLoopModal');
+      }
+    } catch {}
+  }, []);
+
   // Apply Filters
   useEffect(() => {
     applyFilters();

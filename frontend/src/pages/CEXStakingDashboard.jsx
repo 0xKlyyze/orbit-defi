@@ -200,6 +200,18 @@ const CEXStakingDashboard = () => {
     loadPositions();
   }, []);
 
+  // Quick-open CEX position form from dashboard pill
+  useEffect(() => {
+    try {
+      const flag = localStorage.getItem('openCEXPositionForm');
+      if (flag === 'true') {
+        setEditingPosition(null);
+        setIsFormOpen(true);
+        localStorage.removeItem('openCEXPositionForm');
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     applyFilters();
   }, [positions, searchTerm, withdrawalFilter, showWithdrawn, activeTab]);

@@ -1,24 +1,24 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Layers, Activity, BrainCircuit, User } from 'lucide-react';
+import { Brain, Wallet, RefreshCw, Landmark, User } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
 
   const navItems = [
-    { to: '/ai-dashboard', icon: BrainCircuit, label: 'AI Dashboard' },
-    { to: '/positions', icon: LayoutGrid, label: 'Positions' },
-    { to: '/liquid-restaking', icon: Layers, label: 'Liquid Restaking' },
-    { to: '/cex-staking', icon: Activity, label: 'CEX Staking' },
+    { to: '/ai-dashboard', icon: Brain, label: 'AI Dashboard' },
+    { to: '/positions', icon: Wallet, label: 'Positions' },
+    { to: '/liquid-restaking', icon: RefreshCw, label: 'Liquid Restaking' },
+    { to: '/cex-staking', icon: Landmark, label: 'CEX Staking' },
   ];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-20 flex flex-col items-center pt-8 border-r border-[#111] z-50 bg-[#050505]">
-      <div className="mb-12 w-12 h-12 rounded-xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_0_14px_rgba(0,0,0,0.25)]">
+      <div className="mb-14 w-14 h-14 rounded-xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_0_14px_rgba(0,0,0,0.25)]">
         <img
           src="/logo.png"
           alt="App Logo"
-          className="w-11 h-11 object-contain rounded-md"
+          className="w-14 h-14 object-contain rounded-md"
         />
       </div>
       <nav className="flex flex-col gap-8 w-full items-center flex-1">

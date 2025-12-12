@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, 
   Zap, 
@@ -1057,8 +1058,8 @@ const OrbitCreateLoop = ({ onClose, onSave, loop }) => {
 
   // --- MAIN RENDER ---
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[1000000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-[1400px] h-[90vh] bg-[#050505] rounded-[32px] overflow-hidden flex shadow-2xl border border-[#222]">
         
         {/* LEFT SIDE: Content */}
@@ -1175,7 +1176,8 @@ const OrbitCreateLoop = ({ onClose, onSave, loop }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

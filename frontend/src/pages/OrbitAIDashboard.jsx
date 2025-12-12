@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { LayoutGrid, Bell, User } from 'lucide-react';
+import { LayoutGrid, Bell, User, Layers, Activity, RefreshCw, Plus, ChevronDown } from 'lucide-react';
+import CreateLoopModal from '@/components/CreateLoopModal';
+import CEXPositionForm from '@/components/CEXPositionForm';
+import PositionFormModal from '@/components/PositionFormModal';
+import { addLoop } from '@/services/firebaseLoops';
+import { addCEXPosition } from '@/services/firebaseCEX';
+import { addPosition } from '@/services/firebase';
 import AIChatBar from '../components/AIChatBar';
 import MarkdownMessage from '../components/MarkdownMessage';
 import KPISection from '../components/KPISection';
@@ -14,6 +20,74 @@ const OrbitAIDashboard = () => {
   const [riskScore, setRiskScore] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const { toast } = useToast();
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [isActionModalOpen, setActionModalOpen] = useState(false);
+  const [isCreateLoopOpen, setIsCreateLoopOpen] = useState(false);
+  const [editingLoop, setEditingLoop] = useState(null);
+  const [isCEXFormOpen, setIsCEXFormOpen] = useState(false);
+  const [cexEditing, setCexEditing] = useState(null);
+  const [isPositionsFormOpen, setIsPositionsFormOpen] = useState(false);
+  const [positionsEditing, setPositionsEditing] = useState(null);
+  const [isTypePickerOpen, setIsTypePickerOpen] = useState(false);
+  const pillRef = useRef(null);
+
+  const actionLabel = (type) => {
+    if (type === 'loop') return 'New Loop';
+    if (type === 'cexStake') return 'CEX Stake';
+    return 'Traditional Position';
+  };
+
+  const handleActionTrigger = (type) => {
+    setSelectedAction(type);
+    setIsTypePickerOpen(false);
+    if (type === 'loop') {
+      setEditingLoop(null);
+      setIsCreateLoopOpen(true);
+      toast({ title: 'Looping', description: 'Create a new loop' });
+    } else if (type === 'cexStake') {
+      setCexEditing(null);
+      setIsCEXFormOpen(true);
+      toast({ title: 'CEX', description: 'Create a new CEX position' });
+    } else {
+      setPositionsEditing(null);
+      setIsPositionsFormOpen(true);
+      toast({ title: 'Lending/Borrowing', description: 'Create a new position' });
+    }
+  };
+
+  const handleProceed = () => {
+    toast({
+      title: 'Action Initiated',
+      description: `${actionLabel(selectedAction)} started`,
+    });
+    setActionModalOpen(false);
+  };
+
+  const refreshData = async () => {
+    setStats(null);
+    setInsights([]);
+    setRiskMetrics(null);
+    setRiskScore(null);
+    try {
+      const base = process.env.REACT_APP_BACKEND_URL || '/api';
+      const statsRes = await axios.get(`${base}/dashboard/stats`);
+      setStats(statsRes.data);
+
+      const analysisRes = await axios.get(`${base}/dashboard/insights`);
+      if (analysisRes.data) {
+        setInsights(analysisRes.data.insights || []);
+        setRiskMetrics(analysisRes.data.risk_metrics || []);
+        setRiskScore(analysisRes.data.risk_score);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard data", error);
+      toast({
+        title: "Connection Error",
+        description: "Could not load dashboard data.",
+        variant: "destructive"
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,12 +122,93 @@ const OrbitAIDashboard = () => {
     fetchData();
   }, [toast]);
 
+  // Keyboard shortcuts: A opens Add Position picker, R refreshes data
+  useEffect(() => {
+    const onKey = (e) => {
+      const key = e.key.toLowerCase();
+      if (key === 'a') {
+        setIsTypePickerOpen(true);
+      } else if (key === 'r') {
+        refreshData();
+      } else if (key === 'escape') {
+        setIsTypePickerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Close type picker when clicking outside the pill container
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isTypePickerOpen && pillRef.current && !pillRef.current.contains(e.target)) {
+        setIsTypePickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isTypePickerOpen]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = (e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '');
+      if (tag === 'input' || tag === 'textarea' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === 'l') handleActionTrigger('loop');
+      if (k === 's') handleActionTrigger('cexStake');
+      if (k === 'c') handleActionTrigger('traditional');
+      if (k === 'escape') setActionModalOpen(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [toast]);
+
   const handleChatResponse = (query, response) => {
     setChatHistory(prev => [
       ...prev, 
       { role: 'user', content: query },
       { role: 'model', content: response }
     ]);
+  };
+
+  // Save handlers for inline modals
+  const handleSaveLoop = async (loopData) => {
+    try {
+      const newLoop = await addLoop(loopData);
+      setIsCreateLoopOpen(false);
+      setEditingLoop(null);
+      toast({ title: 'Loop created', description: 'Your loop was created successfully.' });
+      refreshData();
+    } catch (error) {
+      console.error('Error creating loop:', error);
+      toast({ title: 'Failed to create loop', description: 'Please try again.', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveCEXPosition = async (positionData) => {
+    try {
+      const newPos = await addCEXPosition(positionData);
+      setIsCEXFormOpen(false);
+      setCexEditing(null);
+      toast({ title: 'CEX position created', description: 'Position added successfully.' });
+      refreshData();
+    } catch (error) {
+      console.error('Error creating CEX position:', error);
+      toast({ title: 'Failed to create position', description: 'Please try again.', variant: 'destructive' });
+    }
+  };
+
+  const handleSavePosition = async (positionData) => {
+    try {
+      const newPos = await addPosition(positionData);
+      setIsPositionsFormOpen(false);
+      setPositionsEditing(null);
+      toast({ title: 'Position created', description: 'Position added successfully.' });
+      refreshData();
+    } catch (error) {
+      console.error('Error creating position:', error);
+      toast({ title: 'Failed to create position', description: 'Please try again.', variant: 'destructive' });
+    }
   };
 
   return (
@@ -130,9 +285,88 @@ const OrbitAIDashboard = () => {
             ))}
           </div>
         </section>
+        {/* Quick Actions Pill - Simplified */}
+        <div ref={pillRef} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#141414]/90 backdrop-blur-xl border border-[#222] rounded-full py-2 px-3 flex items-center gap-2 shadow-2xl z-40">
+          <button
+            className="flex items-center gap-2 pl-3 pr-4 py-2 rounded-md text-white hover:bg-[#222] hover:rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30"
+            title="Add a new position"
+            aria-label="Add Position"
+            onClick={() => setIsTypePickerOpen((v) => !v)}
+          >
+            <Plus size={16} />
+            <span className="text-sm font-semibold">Add Position</span>
+            <ChevronDown size={16} />
+          </button>
+          <div className="w-px h-6 bg-[#333]" />
+          <button
+            className="w-10 h-10 rounded-full bg-[#FFE066] text-black font-bold text-sm hover:bg-[#FFD633] transition-colors flex items-center justify-center"
+            title="Refresh data"
+            aria-label="Refresh"
+            onClick={refreshData}
+          >
+            <RefreshCw size={16} />
+          </button>
+
+          {isTypePickerOpen && (
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-16 bg-[#141414] border border-[#222] rounded-2xl p-2 shadow-2xl w-[340px]">
+              <div className="grid grid-cols-3 gap-2">
+                <button className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-[#222] text-[#bbb] hover:text-white transition-colors" onClick={() => handleActionTrigger('loop')}>
+                  <Layers size={18} />
+                  <span className="text-xs font-medium">Add Loop</span>
+                </button>
+                <button className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-[#222] text-[#bbb] hover:text-white transition-colors" onClick={() => handleActionTrigger('traditional')}>
+                  <LayoutGrid size={18} />
+                  <span className="text-xs font-medium">Add Lending</span>
+                </button>
+                <button className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-[#222] text-[#bbb] hover:text-white transition-colors" onClick={() => handleActionTrigger('cexStake')}>
+                  <Activity size={18} />
+                  <span className="text-xs font-medium">Add CEX</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Inline Creation Modals */}
+        {isCreateLoopOpen && (
+          <CreateLoopModal
+            onClose={() => { setIsCreateLoopOpen(false); setEditingLoop(null); }}
+            onSave={handleSaveLoop}
+            loop={editingLoop}
+          />
+        )}
+
+        <CEXPositionForm
+          isOpen={isCEXFormOpen}
+          onClose={() => { setIsCEXFormOpen(false); setCexEditing(null); }}
+          onSave={handleSaveCEXPosition}
+          position={cexEditing}
+        />
+
+        <PositionFormModal
+          isOpen={isPositionsFormOpen}
+          onClose={() => { setIsPositionsFormOpen(false); setPositionsEditing(null); }}
+          onSave={handleSavePosition}
+          initialData={positionsEditing}
+        />
       </div>
     </div>
   );
 };
+
+const ActionIcon = ({ icon, label, shortcut, onClick }) => (
+  <button className="flex items-center gap-2 px-4 py-2 hover:bg-[#222] rounded-full text-[#888] hover:text-white transition-all group" onClick={onClick}>
+    {icon}
+    <span className="text-sm font-medium">{label}</span>
+    <span className="text-[10px] bg-[#000] px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">{shortcut}</span>
+  </button>
+);
+
+const PlusIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
 
 export default OrbitAIDashboard;
