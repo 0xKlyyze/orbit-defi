@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 const OrbitAIDashboard = () => {
   const [stats, setStats] = useState(null);
   const [insights, setInsights] = useState([]);
+  const [riskMetrics, setRiskMetrics] = useState(null);
+  const [riskScore, setRiskScore] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const { toast } = useToast();
 
@@ -16,10 +18,17 @@ const OrbitAIDashboard = () => {
     const fetchData = async () => {
       try {
         const statsRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/stats`);
-        const insightsRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/insights`);
-        
         setStats(statsRes.data);
-        setInsights(insightsRes.data);
+
+        // Fetch AI Analysis (Insights + Risk)
+        const analysisRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/insights`);
+        
+        if (analysisRes.data) {
+            setInsights(analysisRes.data.insights || []);
+            setRiskMetrics(analysisRes.data.risk_metrics || []);
+            setRiskScore(analysisRes.data.risk_score);
+        }
+
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
         toast({
@@ -91,8 +100,8 @@ const OrbitAIDashboard = () => {
           </div>
         )}
 
-        {/* KPI Grid */}
-        <KPISection stats={stats} />
+        {/* KPI Grid - Passing AI Data */}
+        <KPISection stats={stats} riskMetrics={riskMetrics} riskScore={riskScore} />
 
         {/* Insights Stream */}
         <section>

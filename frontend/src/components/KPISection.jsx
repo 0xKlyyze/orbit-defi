@@ -13,6 +13,15 @@ const portfolioHistory = [
   { name: 'Sun', value: 13850 },
 ];
 
+// Fallback Risk Data if AI hasn't loaded yet
+const DEFAULT_RISK_METRICS = [
+    { subject: 'Liquidation', A: 50, fullMark: 100 },
+    { subject: 'Volatility', A: 50, fullMark: 100 },
+    { subject: 'Protocol', A: 50, fullMark: 100 },
+    { subject: 'Peg', A: 50, fullMark: 100 },
+    { subject: 'Strategy', A: 50, fullMark: 100 },
+];
+
 const StatCard = ({ label, value, sub, trend, color }) => (
   <div className="p-6 rounded-[24px] bg-[#141414] border border-[#222] relative overflow-hidden h-[calc(50%-12px)] flex flex-col justify-center">
     <div className="relative z-10">
@@ -33,7 +42,17 @@ const StatCard = ({ label, value, sub, trend, color }) => (
   </div>
 );
 
-const KPISection = ({ stats }) => {
+const KPISection = ({ stats, riskMetrics, riskScore }) => {
+  // Use AI data if available, else default
+  const currentRiskData = riskMetrics || DEFAULT_RISK_METRICS;
+  const currentRiskScore = riskScore || 50;
+  
+  const getRiskLabel = (score) => {
+      if (score >= 80) return "Resilient";
+      if (score >= 60) return "Moderate";
+      return "High Risk";
+  };
+
   return (
     <div className="grid grid-cols-12 gap-6 mb-12">
 
@@ -87,7 +106,7 @@ const KPISection = ({ stats }) => {
         />
       </div>
 
-      {/* 3. Risk Radar */}
+      {/* 3. Risk Radar - POPULATED BY AI */}
       <div className="col-span-12 md:col-span-6 lg:col-span-3 p-6 rounded-[32px] bg-[#141414] border border-[#222] relative flex flex-col items-center justify-center">
         <div className="absolute top-6 left-6 flex items-center gap-2">
             <ShieldAlert size={16} className="text-[#FF6633]" />
@@ -95,13 +114,7 @@ const KPISection = ({ stats }) => {
         </div>
         <div className="w-full h-[200px] mt-6">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
-                  { subject: 'Liquidation', A: 80, fullMark: 100 },
-                  { subject: 'Volatility', A: 65, fullMark: 100 },
-                  { subject: 'Protocol', A: 90, fullMark: 100 },
-                  { subject: 'Peg', A: 70, fullMark: 100 },
-                  { subject: 'Strategy', A: 85, fullMark: 100 },
-              ]}>
+              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={currentRiskData}>
                   <PolarGrid stroke="#333" />
                   <PolarAngleAxis dataKey="subject" tick={{ fill: '#666', fontSize: 10 }} />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
@@ -110,7 +123,7 @@ const KPISection = ({ stats }) => {
             </ResponsiveContainer>
         </div>
         <div className="absolute bottom-4 text-[10px] text-[#666]">
-            AI Assessment: <span className="text-[#33FFCC]">Resilient</span>
+            AI Assessment: <span className="text-[#33FFCC]">{getRiskLabel(currentRiskScore)}</span>
         </div>
       </div>
 

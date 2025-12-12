@@ -20,22 +20,14 @@ class GeminiService:
 
     def generate_chat_response(self, messages: list, context: str = None) -> str:
         try:
-            # Convert messages to Gemini format
             gemini_messages = []
             
-            # Add system instruction/context if provided
-            if context:
-                # Gemini often works better if context is added to the first user message or as system instruction
-                # Here we'll treat it as a system instruction logic by prepending
-                pass 
-
             for msg in messages:
                 gemini_messages.append(types.Content(
                     role=msg.role if msg.role == 'user' else 'model',
                     parts=[types.Part(text=msg.content)]
                 ))
 
-            # System instruction for Orbit Persona
             system_instruction = """
             You are Orbit AI, an advanced DeFi portfolio manager and assistant.
             Your goal is to help users manage their crypto investments, analyze risks, and find yield opportunities.
@@ -63,15 +55,33 @@ class GeminiService:
     def generate_weekly_analysis(self, portfolio_data: dict):
         try:
             prompt = f"""
-            Analyze the following DeFi portfolio data and generate a weekly summary.
-            Identify key trends, risks, and opportunities.
+            Analyze the following COMPLETE DeFi portfolio data (Loops, CEX Positions, Standard DeFi Positions) and generate a comprehensive weekly report.
             
             Portfolio Data:
-            {json.dumps(portfolio_data, indent=2)}
+            {json.dumps(portfolio_data, indent=2, default=str)}
             
-            Output format:
-            Provide a concise 'Executive Summary' and 3 key 'Strategic Insights' (Warning, Opportunity, or Info).
-            Return the result as valid JSON with keys: 'summary' (string) and 'insights' (list of objects with type, title, message, impact).
+            Your task is to populate the 'Risk Heatmap' and 'Orbit Intelligence Stream' widgets of the dashboard.
+            
+            OUTPUT REQUIREMENTS (Strict JSON):
+            
+            1. 'risk_metrics': An array of 5 objects for the Radar Chart.
+               Each object must have: 
+               - 'subject': string (Must be exactly these 5: 'Liquidation', 'Volatility', 'Protocol', 'Peg', 'Strategy')
+               - 'A': integer (0-100, where 100 is perfectly safe/good, 0 is critical risk)
+               - 'fullMark': integer (always 100)
+               
+            2. 'insights': An array of 3-5 insight objects.
+               Each object must have:
+               - 'type': string ('warning', 'opportunity', 'info')
+               - 'title': string (Short, punchy header)
+               - 'message': string (Actionable advice or observation)
+               - 'impact': string (e.g. 'High Risk', '+$450/yr', 'Liquidity')
+               
+            3. 'risk_score': integer (0-100 overall safety score)
+            
+            4. 'summary': string (Brief executive summary)
+
+            Make the analysis realistic based on the provided data. If data is sparse, make reasonable assumptions for a general crypto portfolio but be conservative.
             """
             
             response = self.client.models.generate_content(
@@ -79,17 +89,18 @@ class GeminiService:
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
-                    temperature=0.5
+                    temperature=0.4
                 )
             )
             
             return json.loads(response.text)
         except Exception as e:
             logger.error(f"Error generating analysis: {str(e)}")
-            # Return mock data on failure to not break UI
             return {
-                "summary": "Unable to generate real-time analysis. Showing cached data.",
-                "insights": []
+                "risk_metrics": [],
+                "insights": [],
+                "risk_score": 0,
+                "summary": "Analysis failed."
             }
 
 # Singleton instance

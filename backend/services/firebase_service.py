@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,55 @@ class FirebaseService:
         except Exception as e:
             logger.error(f"Failed to initialize Firebase Admin: {e}")
             self.db = None
+
+    def get_full_portfolio_context(self):
+        if not self.db:
+            return {}
+        
+        try:
+            # Fetch all raw data for AI context
+            loops = [doc.to_dict() for doc in self.db.collection('loops').stream()]
+            cex = [doc.to_dict() for doc in self.db.collection('cex_positions').stream()]
+            defi = [doc.to_dict() for doc in self.db.collection('positions').stream()]
+            
+            return {
+                "loops": loops,
+                "cex_positions": cex,
+                "defi_positions": defi,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"Error fetching full context: {e}")
+            return {}
+
+    def get_latest_ai_analysis(self):
+        if not self.db:
+            return None
+            
+        try:
+            # Get the most recent analysis document
+            docs = self.db.collection('ai_analyses') \
+                .order_by('timestamp', direction=firestore.Query.DESCENDING) \
+                .limit(1) \
+                .stream()
+            
+            for doc in docs:
+                return doc.to_dict()
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching latest analysis: {e}")
+            return None
+
+    def save_ai_analysis(self, analysis_data):
+        if not self.db:
+            return
+            
+        try:
+            analysis_data['timestamp'] = datetime.now().isoformat()
+            self.db.collection('ai_analyses').add(analysis_data)
+            logger.info("Saved new AI analysis")
+        except Exception as e:
+            logger.error(f"Error saving AI analysis: {e}")
 
     def get_aggregated_stats(self):
         if not self.db:
@@ -64,8 +113,10 @@ class FirebaseService:
                 except:
                     apy = 0.0
                 
+                # Count every loop document, even if value is 0 or negative (though usually positive)
+                loop_stats['count'] += 1
+                
                 if net_val > 0:
-                    loop_stats['count'] += 1
                     loop_stats['total_usd'] += net_val
                     loop_stats['weighted_apy_sum'] += (net_val * apy)
 
@@ -99,8 +150,9 @@ class FirebaseService:
                 except:
                     apy = 0.0
                 
+                cex_stats['count'] += 1
+                
                 if usd_val > 0:
-                    cex_stats['count'] += 1
                     cex_stats['total_usd'] += usd_val
                     cex_stats['weighted_apy_sum'] += (usd_val * apy)
 
@@ -132,8 +184,9 @@ class FirebaseService:
                 if 'platform' in data:
                     active_protocols.add(data['platform'])
                 
+                pos_stats['active_count'] += 1
+                
                 if usd_val > 0:
-                    pos_stats['active_count'] += 1
                     pos_stats['total_usd'] += usd_val
                     pos_stats['weighted_apy_sum'] += (usd_val * apy)
             
