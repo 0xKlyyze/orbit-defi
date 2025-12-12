@@ -52,6 +52,10 @@ async def get_insights():
         if should_generate_new:
             logger.info("Generating NEW AI analysis...")
             if not gemini_service:
+                # If service not init, fall back to cache if exists (even if old)
+                if latest_analysis:
+                    logger.warning("AI Service unavailable, using old cache")
+                    return latest_analysis
                 raise HTTPException(status_code=503, detail="AI Service unavailable")
             
             # Fetch FULL context
@@ -60,12 +64,20 @@ async def get_insights():
             # Generate via Gemini
             analysis_result = gemini_service.generate_weekly_analysis(full_context)
             
+            # Check for failure
+            if analysis_result.get('summary') == "Analysis failed.":
+                logger.error("AI Analysis generation failed (likely quota). Using old cache if available.")
+                if latest_analysis:
+                    return latest_analysis
+                # If no cache, return the failure object so UI handles it (or blank)
+                return analysis_result
+
             # Add IDs to insights for React keys
             if 'insights' in analysis_result:
                 for insight in analysis_result['insights']:
                     insight['id'] = str(uuid.uuid4())
             
-            # Save to Firebase
+            # Save to Firebase ONLY if successful
             firebase_service.save_ai_analysis(analysis_result)
             
             return analysis_result
