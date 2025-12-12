@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wallet, TrendingUp, ShieldAlert, Activity, RefreshCcw, Landmark, ArrowRight, Layers, Zap } from 'lucide-react';
+import { Wallet, TrendingUp, ShieldAlert, Activity, RefreshCcw, Landmark } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 // Mock Data for Charts (Keep until we implement history collection)
@@ -13,11 +13,31 @@ const portfolioHistory = [
   { name: 'Sun', value: 13850 },
 ];
 
+const StatCard = ({ label, value, sub, trend, color }) => (
+  <div className="p-6 rounded-[24px] bg-[#141414] border border-[#222] relative overflow-hidden h-[calc(50%-12px)] flex flex-col justify-center">
+    <div className="relative z-10">
+      <p className="text-[#666] text-xs uppercase tracking-wider mb-2">{label}</p>
+      <h3 className="text-3xl font-bold text-white mb-2">{value}</h3>
+      <div className="flex items-center gap-2">
+        <span className="text-sm" style={{ color: color }}>{sub}</span>
+        {trend && (
+           <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#888]">{trend}</span>
+        )}
+      </div>
+    </div>
+    {/* Background Decoration */}
+    <div
+      className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-3xl opacity-20"
+      style={{ backgroundColor: color }}
+    ></div>
+  </div>
+);
+
 const KPISection = ({ stats }) => {
   return (
     <div className="grid grid-cols-12 gap-6 mb-12">
 
-      {/* 1. Total Net Worth (Hero) - EXACT COPY FROM MOCKUP STRUCTURE */}
+      {/* 1. Total Net Worth (Hero) */}
       <div className="col-span-12 lg:col-span-4 p-8 rounded-[32px] bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] border border-[#222] relative overflow-hidden group">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
         <div className="relative z-10 flex flex-col h-full justify-between">
@@ -51,34 +71,23 @@ const KPISection = ({ stats }) => {
         </div>
       </div>
 
-      {/* 2. Secondary Stats (Active Loops & Staked in CEX) - EXACT COPY FROM MOCKUP STRUCTURE */}
+      {/* 2. Secondary Stats (Active Loops & Staked in CEX) */}
       <div className="col-span-12 md:col-span-6 lg:col-span-2 space-y-6">
-        {/* Active Loops Widget */}
-        <div className="p-6 rounded-[24px] bg-[#141414] border border-[#222] relative overflow-hidden h-[calc(50%-12px)] flex flex-col justify-center">
-            <div className="relative z-10">
-              <p className="text-[#666] text-xs uppercase tracking-wider mb-2">Active Loops</p>
-              <h3 className="text-3xl font-bold text-white mb-2">{stats?.breakdown?.loops?.count ?? 0}</h3>
-              <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#33FFCC]">{stats?.breakdown?.loops?.apy ?? 0}% APY</span>
-              </div>
-            </div>
-            <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-3xl opacity-20 bg-[#33FFCC]"></div>
-        </div>
-
-        {/* Staked in CEX Widget */}
-        <div className="p-6 rounded-[24px] bg-[#141414] border border-[#222] relative overflow-hidden h-[calc(50%-12px)] flex flex-col justify-center">
-            <div className="relative z-10">
-              <p className="text-[#666] text-xs uppercase tracking-wider mb-2">Staked in CEX</p>
-              <h3 className="text-3xl font-bold text-white mb-2">${(stats?.breakdown?.cex?.value / 1000).toFixed(1)}k</h3>
-              <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#8B5CF6]">{stats?.breakdown?.cex?.apy ?? 0}% APY</span>
-              </div>
-            </div>
-            <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-3xl opacity-20 bg-[#8B5CF6]"></div>
-        </div>
+        <StatCard 
+            label="Active Loops"
+            value={stats?.breakdown?.loops?.count ?? 0}
+            sub={`${stats?.breakdown?.loops?.apy ?? 0}% APY`}
+            color="#33FFCC"
+        />
+        <StatCard 
+            label="Staked in CEX"
+            value={`$${(stats?.breakdown?.cex?.value / 1000).toFixed(1)}k`}
+            sub={`${stats?.breakdown?.cex?.apy ?? 0}% APY`}
+            color="#8B5CF6"
+        />
       </div>
 
-      {/* 3. Risk Radar - Placeholder for now until AI integration, kept to match mockup layout */}
+      {/* 3. Risk Radar */}
       <div className="col-span-12 md:col-span-6 lg:col-span-3 p-6 rounded-[32px] bg-[#141414] border border-[#222] relative flex flex-col items-center justify-center">
         <div className="absolute top-6 left-6 flex items-center gap-2">
             <ShieldAlert size={16} className="text-[#FF6633]" />
@@ -105,7 +114,7 @@ const KPISection = ({ stats }) => {
         </div>
       </div>
 
-      {/* 4. Yield Pulse Widget - EXACT COPY FROM MOCKUP STRUCTURE */}
+      {/* 4. Yield Pulse Widget */}
       <div className="col-span-12 lg:col-span-3 p-6 rounded-[32px] bg-[#141414] border border-[#222] relative">
         <div className="flex justify-between items-center mb-6">
             <span className="text-white text-xs font-bold uppercase">Yield Pulse</span>
