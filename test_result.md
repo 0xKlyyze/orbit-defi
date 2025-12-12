@@ -37,7 +37,7 @@
 ##     status_history:
 ##         -working: true
 ##         -agent: "main"
-##         -comment: "Implemented Firebase Admin aggregation logic and verified data fetch."
+##         -comment: "Implemented Firebase Admin aggregation logic, robust APY parsing, and Snapshot saving."
 ##
 ## frontend:
 ##   - task: "Create Dashboard Page"
@@ -50,12 +50,12 @@
 ##     status_history:
 ##         -working: "NA"
 ##         -agent: "main"
-##         -comment: "Updated KPISection to show breakdown of real data."
+##         -comment: "Updated KPISection to include all 4 requested widgets (Net Worth, Yield, Loops, CEX)."
 ##
 ## metadata:
 ##   created_by: "main_agent"
-##   version: "1.2"
-##   test_sequence: 2
+##   version: "1.3"
+##   test_sequence: 3
 ##   run_ui: false
 ##
 ## test_plan:
@@ -67,7 +67,7 @@
 ##
 ## agent_communication:
 ##     -agent: "main"
-##     -message: "Connected backend to Firebase and updated dashboard to show real aggregated stats."
+##     -message: "Fixed widget layout to match requirements and implemented snapshot history."
 
 # Protocol Guidelines for Main agent
 #
