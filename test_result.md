@@ -121,3 +121,100 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+## user_problem_statement: Migrate backend logic into frontend and preserve functionality
+## backend:
+##   - task: "Setup Express API Endpoints"
+##     implemented: true
+##     working: true
+##     file: "/frontend/server/src/index.ts"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Added /api root, /api/health, and mounted dashboard routes."
+##   - task: "Migrate Firebase Admin Aggregation"
+##     implemented: true
+##     working: true
+##     file: "/frontend/server/src/services/firebaseService.ts"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Implemented aggregated stats, snapshot saving, and context retrieval."
+##   - task: "Migrate Gemini AI Service"
+##     implemented: true
+##     working: true
+##     file: "/frontend/server/src/services/geminiService.ts"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Implemented chat and weekly analysis with strict JSON output."
+##   - task: "Wire Dashboard Routes"
+##     implemented: true
+##     working: true
+##     file: "/frontend/server/src/routes/dashboard.ts"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Added stats, insights (with 7-day cache), chat, and generate-analysis routes with Zod validation."
+## frontend:
+##   - task: "Update OrbitAIDashboard to new API"
+##     implemented: true
+##     working: true
+##     file: "/frontend/src/pages/OrbitAIDashboard.jsx"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Switched to base '/api'; added robust loading reset and error handling."
+##   - task: "Enhance KPISection null-safe rendering"
+##     implemented: true
+##     working: true
+##     file: "/frontend/src/components/KPISection.jsx"
+##     stuck_count: 0
+##     priority: "medium"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Guarded toLocaleString and numeric fields; preserved defaults."
+##   - task: "AIChatBar base URL fallback"
+##     implemented: true
+##     working: true
+##     file: "/frontend/src/components/AIChatBar.jsx"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##       -working: true
+##       -agent: "main"
+##       -comment: "Uses process.env or '/api' fallback; maintains error toast."
+## metadata:
+##   created_by: "main_agent"
+##   version: "2.0"
+##   test_sequence: 1
+##   run_ui: true
+## test_plan:
+##   current_focus:
+##     - "Start API via npm run api:start and validate all endpoints"
+##     - "Load AI Dashboard and verify stats/insights populate"
+##     - "Test chat flow via AIChatBar"
+##   stuck_tasks: []
+##   test_all: true
+##   test_priority: "sequential"
+## agent_communication:
+##   -agent: "main"
+##   -message: "Backend migrated into frontend/server (TypeScript). UI wired to /api with fallbacks and error handling."

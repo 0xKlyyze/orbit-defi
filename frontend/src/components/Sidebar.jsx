@@ -1,25 +1,30 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Layers, Activity, BrainCircuit } from 'lucide-react';
+import { LayoutGrid, Layers, Activity, BrainCircuit, User } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
 
   const navItems = [
-    { to: '/', icon: LayoutGrid, label: 'Positions' },
+    { to: '/ai-dashboard', icon: BrainCircuit, label: 'AI Dashboard' },
+    { to: '/positions', icon: LayoutGrid, label: 'Positions' },
     { to: '/liquid-restaking', icon: Layers, label: 'Liquid Restaking' },
     { to: '/cex-staking', icon: Activity, label: 'CEX Staking' },
-    { to: '/ai-dashboard', icon: BrainCircuit, label: 'AI Dashboard' },
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-20 flex flex-col items-center py-8 border-r border-[#111] z-50 bg-[#050505]">
-      <div className="w-10 h-10 rounded-xl bg-[#FFE066] mb-12 flex items-center justify-center shadow-[0_0_15px_rgba(255,224,102,0.3)]">
-        <div className="w-4 h-4 bg-black rounded-sm transform rotate-45"></div>
+    <aside className="fixed left-0 top-0 h-screen w-20 flex flex-col items-center pt-8 border-r border-[#111] z-50 bg-[#050505]">
+      <div className="mb-12 w-12 h-12 rounded-xl bg-[#0a0a0a] flex items-center justify-center shadow-[0_0_14px_rgba(0,0,0,0.25)]">
+        <img
+          src="/logo.png"
+          alt="App Logo"
+          className="w-11 h-11 object-contain rounded-md"
+        />
       </div>
-      <nav className="flex flex-col gap-8 w-full items-center">
+      <nav className="flex flex-col gap-8 w-full items-center flex-1">
         {navItems.map(({ to, icon: Icon, label }) => {
-          const isActive = location.pathname === to;
+          const isActive = location.pathname === to || (to === '/ai-dashboard' && location.pathname === '/');
+          const isAIDashboard = to === '/ai-dashboard';
           return (
             <NavLink
               key={to}
@@ -27,13 +32,24 @@ const Sidebar = () => {
               title={label}
               className={`p-3 rounded-xl transition-colors cursor-pointer ${
                 isActive ? 'bg-[#141414] text-[#FFE066]' : 'text-[#444] hover:text-white'
-              }`}
+              } ${isAIDashboard ? 'bg-gradient-to-br from-[#7C3AED]/20 via-[#8B5CF6]/10 to-[#A78BFA]/5 shadow-[0_0_18px_rgba(139,92,246,0.2)] hover:from-[#7C3AED]/30 hover:via-[#8B5CF6]/20 hover:to-[#A78BFA]/10' : ''}`}
             >
-              <Icon size={24} />
+              <Icon size={24} className={isAIDashboard ? 'text-[#A78BFA]' : ''} />
             </NavLink>
           );
         })}
       </nav>
+      {/* Bottom Profile avatar-style button */}
+      <div className="absolute bottom-[15px] left-1/2 -translate-x-1/2">
+        <NavLink
+          to="/profile"
+          aria-label="Profile"
+          title="Profile"
+          className="group inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#60A5FA] shadow-[0_0_18px_rgba(96,165,250,0.22)] border border-[#1F1F1F] hover:shadow-[0_0_22px_rgba(96,165,250,0.3)]"
+        >
+          <User size={18} className="opacity-80" />
+        </NavLink>
+      </div>
     </aside>
   );
 };

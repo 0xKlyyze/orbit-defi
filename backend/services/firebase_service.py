@@ -67,13 +67,24 @@ class FirebaseService:
     def save_ai_analysis(self, analysis_data):
         if not self.db:
             return
-            
+        
         try:
             analysis_data['timestamp'] = datetime.now().isoformat()
             self.db.collection('ai_analyses').add(analysis_data)
             logger.info("Saved new AI analysis")
         except Exception as e:
             logger.error(f"Error saving AI analysis: {e}")
+
+    def save_chat(self, chat_data):
+        if not self.db:
+            logger.error("Cannot save chat: Firestore client not initialized")
+            return
+        try:
+            chat_data['timestamp'] = datetime.now().isoformat()
+            self.db.collection('ai_chats').add(chat_data)
+            logger.info("Saved AI chat message")
+        except Exception as e:
+            logger.error(f"Error saving chat message: {e}")
 
     def get_aggregated_stats(self):
         if not self.db:

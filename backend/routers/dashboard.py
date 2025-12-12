@@ -104,7 +104,35 @@ async def chat_with_ai(request: ChatRequest):
         raise HTTPException(status_code=503, detail="AI Service unavailable")
     
     # Optional: Enhance context with live stats
-    response_text = gemini_service.generate_chat_response(request.messages, request.context)
+    context_payload = None
+    try:
+        if request.include_context:
+            full_context = firebase_service.get_full_portfolio_context()
+            context_payload = json.dumps(full_context)
+        else:
+            context_payload = request.context
+    except Exception as e:
+        logger.error(f"Failed to build context for chat: {e}")
+        context_payload = request.context
+
+    response_text = gemini_service.generate_chat_response(request.messages, context_payload)
+
+    # Persist chat record
+    try:
+        chat_record = {
+            "chat_id": str(uuid.uuid4()),
+            "messages": [
+                {"role": m.role, "content": m.content} for m in request.messages
+            ],
+            "response": response_text,
+            "include_context": request.include_context,
+            "enable_research": request.enable_research,
+            "research_query": request.research_query,
+        }
+        firebase_service.save_chat(chat_record)
+    except Exception as e:
+        logger.error(f"Failed to save chat record: {e}")
+
     return ChatResponse(response=response_text)
 
 @router.post("/dashboard/generate-analysis", response_model=AnalysisResponse)

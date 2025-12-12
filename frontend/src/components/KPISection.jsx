@@ -43,9 +43,9 @@ const StatCard = ({ label, value, sub, trend, color }) => (
 );
 
 const KPISection = ({ stats, riskMetrics, riskScore }) => {
-  // Use AI data if available, else default
-  const currentRiskData = riskMetrics || DEFAULT_RISK_METRICS;
-  const currentRiskScore = riskScore || 50;
+  // Use AI data if available and non-empty, else default
+  const currentRiskData = Array.isArray(riskMetrics) && riskMetrics.length > 0 ? riskMetrics : DEFAULT_RISK_METRICS;
+  const currentRiskScore = typeof riskScore === 'number' && Number.isFinite(riskScore) ? riskScore : 50;
   
   const getRiskLabel = (score) => {
       if (score >= 80) return "Resilient";
@@ -66,7 +66,7 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
                   <span className="text-[#888] font-medium text-xs uppercase tracking-wider">Net Aggregated Worth</span>
               </div>
               <h2 className="text-5xl font-bold text-white tracking-tighter mb-2">
-                ${stats?.total_net_worth?.toLocaleString() ?? '0.00'}
+                ${typeof stats?.total_net_worth === 'number' ? stats.total_net_worth.toLocaleString() : '0.00'}
               </h2>
               <p className="text-[#33FFCC] flex items-center gap-1 text-sm font-medium">
                   <TrendingUp size={14} /> +2.4% (24h)
@@ -157,7 +157,7 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
             </div>
             <div className="pt-4 border-t border-[#222] mt-2">
               <p className="text-[#888] text-xs">Est. Monthly Income</p>
-              <p className="text-white font-bold text-xl mt-1">${stats?.monthly_income?.toLocaleString() ?? '0.00'}</p>
+              <p className="text-white font-bold text-xl mt-1">${typeof stats?.monthly_income === 'number' ? stats.monthly_income.toLocaleString() : '0.00'}</p>
             </div>
         </div>
       </div>

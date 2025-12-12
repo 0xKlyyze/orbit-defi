@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { LayoutGrid, Bell, User } from 'lucide-react';
 import AIChatBar from '../components/AIChatBar';
+import MarkdownMessage from '../components/MarkdownMessage';
 import KPISection from '../components/KPISection';
 import InsightCard from '../components/InsightCard';
 import { useToast } from "@/hooks/use-toast";
@@ -16,12 +17,17 @@ const OrbitAIDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setStats(null);
+      setInsights([]);
+      setRiskMetrics(null);
+      setRiskScore(null);
       try {
-        const statsRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/stats`);
+        const base = process.env.REACT_APP_BACKEND_URL || '/api';
+        const statsRes = await axios.get(`${base}/dashboard/stats`);
         setStats(statsRes.data);
 
         // Fetch AI Analysis (Insights + Risk)
-        const analysisRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/insights`);
+        const analysisRes = await axios.get(`${base}/dashboard/insights`);
         
         if (analysisRes.data) {
             setInsights(analysisRes.data.insights || []);
@@ -92,7 +98,11 @@ const OrbitAIDashboard = () => {
                         ? 'bg-[#8B5CF6]/20 text-white rounded-tr-none' 
                         : 'bg-[#222] text-gray-300 rounded-tl-none'
                      }`}>
-                        <p className="text-sm">{msg.content}</p>
+                        {msg.role === 'user' ? (
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        ) : (
+                          <MarkdownMessage content={msg.content} />
+                        )}
                      </div>
                   </div>
                 ))}

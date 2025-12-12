@@ -25,6 +25,9 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     context: Optional[str] = None
+    include_context: Optional[bool] = False
+    enable_research: Optional[bool] = False
+    research_query: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str
