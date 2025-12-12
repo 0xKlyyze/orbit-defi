@@ -3,12 +3,14 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy 
 
 export const addCEXPosition = async (position) => {
   try {
+    const createdAt = new Date().toISOString();
+    const lastUpdated = createdAt;
     const docRef = await addDoc(collection(db, 'cex_positions'), {
       ...position,
-      createdAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString()
+      createdAt,
+      lastUpdated
     });
-    return { id: docRef.id, ...position };
+    return { id: docRef.id, ...position, createdAt, lastUpdated };
   } catch (error) {
     console.error('Error adding CEX position:', error);
     throw error;
@@ -41,7 +43,7 @@ export const deleteCEXPosition = async (id) => {
 
 export const getCEXPositions = async () => {
   try {
-    const q = query(collection(db, 'cex_positions'), orderBy('lastUpdated', 'desc'));
+    const q = query(collection(db, 'cex_positions'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     const positions = [];
     querySnapshot.forEach((doc) => {
@@ -54,33 +56,36 @@ export const getCEXPositions = async () => {
   }
 };
 
-// Calculate withdrawal status based on staking type and dates
+// Calculate withdrawal status based on position.status and unlockDate
 export const calculateWithdrawalStatus = (position) => {
   const now = new Date();
-  const entryDate = new Date(position.entryDate);
-  
-  if (position.stakingType === 'Flexible') {
+  const { status, unlockDate: unlockDateStr } = position || {};
+
+  // Withdrawn / Closed positions are considered historical
+  if (status === 'Withdrawn' || status === 'Closed') {
+    return { status: 'Withdrawn', color: 'gray', priority: 5 };
+  }
+
+  // Flexible / Active positions can withdraw anytime
+  if (status === 'Active') {
     return { status: 'Can Withdraw Now', color: 'emerald', priority: 1 };
   }
-  
-  if (position.stakingType === 'Locked' && position.unlockDate) {
-    const unlockDate = new Date(position.unlockDate);
-    if (now >= unlockDate) {
-      return { status: 'Can Withdraw Now', color: 'emerald', priority: 1 };
+
+  // Locked positions depend on unlockDate
+  if (status === 'Locked') {
+    if (unlockDateStr) {
+      const unlockDate = new Date(unlockDateStr);
+      if (now >= unlockDate) {
+        return { status: 'Can Withdraw Now', color: 'emerald', priority: 1 };
+      }
+      const msRemaining = unlockDate.getTime() - now.getTime();
+      const daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+      return { status: 'Locked', color: 'red', priority: 3, daysRemaining };
     }
     return { status: 'Locked', color: 'red', priority: 3 };
   }
-  
-  if (position.stakingType === 'Withdraw-in-n-days' && position.lockPeriodDays) {
-    const unlockDate = new Date(entryDate);
-    unlockDate.setDate(unlockDate.getDate() + parseInt(position.lockPeriodDays));
-    
-    if (now >= unlockDate) {
-      return { status: 'Can Withdraw Now', color: 'emerald', priority: 1 };
-    }
-    return { status: 'Pending', color: 'yellow', priority: 2 };
-  }
-  
+
+  // Fallback if unknown schema
   return { status: 'Unknown', color: 'gray', priority: 4 };
 };
 

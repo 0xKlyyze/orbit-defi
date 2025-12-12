@@ -226,8 +226,8 @@ const CEXStakingDashboard = () => {
         // Show only withdrawn or closed positions
         filtered = filtered.filter(p => p.status === 'Withdrawn' || p.status === 'Closed');
     } else {
-        // Active Tab: Show active positions
-        filtered = filtered.filter(p => p.status === 'Active');
+        // Active Tab: Show current positions (Active + Locked)
+        filtered = filtered.filter(p => p.status === 'Active' || p.status === 'Locked');
     }
 
     // Withdrawal Status Filter
@@ -263,13 +263,13 @@ const CEXStakingDashboard = () => {
     try {
       if (editingPosition) {
         await updateCEXPosition(editingPosition.id, positionData);
-        setPositions(positions.map(p => 
+        setPositions(prev => prev.map(p => 
           p.id === editingPosition.id ? { ...p, ...positionData } : p
         ));
         toast.success('Position updated successfully');
       } else {
         const newPosition = await addCEXPosition(positionData);
-        setPositions([newPosition, ...positions]);
+        setPositions(prev => [newPosition, ...prev]);
         toast.success('Position added successfully');
       }
       setEditingPosition(null);
@@ -298,7 +298,7 @@ const CEXStakingDashboard = () => {
   };
 
   // --- STATS CALCULATION ---
-  const activePositions = positions.filter(p => p.status === 'Active');
+  const activePositions = positions.filter(p => p.status === 'Active' || p.status === 'Locked');
   const totalValue = activePositions.reduce((sum, p) => sum + (parseFloat(p.usdValue) || 0), 0);
   
   const averageAPY = activePositions.length > 0
@@ -516,7 +516,7 @@ const CEXStakingDashboard = () => {
             onClick={() => setActiveTab('active')}
             className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'active' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
           >
-            Active Positions ({positions.filter(p => p.status === 'Active').length})
+            Active Positions ({positions.filter(p => p.status === 'Active' || p.status === 'Locked').length})
             {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
           </button>
           <button 
