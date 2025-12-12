@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from models import ChatRequest, ChatResponse, GenerateAnalysisRequest, AnalysisResponse, Insight, PortfolioStats
 from services.gemini_service import gemini_service
 import logging
+from services.firebase_service import firebase_service
 from datetime import datetime
 import uuid
 
@@ -47,7 +48,9 @@ MOCK_INSIGHTS = [
 
 @router.get("/dashboard/stats", response_model=PortfolioStats)
 async def get_dashboard_stats():
-    return MOCK_STATS
+    # Use real data from Firebase
+    stats = firebase_service.get_aggregated_stats()
+    return PortfolioStats(**stats)
 
 @router.get("/dashboard/insights", response_model=list[Insight])
 async def get_insights():
