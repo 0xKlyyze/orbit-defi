@@ -16,9 +16,9 @@ class PortfolioStats(BaseModel):
     active_protocols: int
     yield_apy: float
     monthly_income: float
+    breakdown: Dict[str, Any] = {}
     
 class ChatMessage(BaseModel):
-    breakdown: Dict[str, Any] = {}
     role: str
     content: str
 
