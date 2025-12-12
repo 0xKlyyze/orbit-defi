@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import logging
 from pathlib import Path
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -43,46 +44,65 @@ class FirebaseService:
 
             for doc in loops_docs:
                 data = doc.to_dict()
-                # Use netExposure if available, else calc collateral - debt
-                # Based on structure: netExposure, or collateralValue - debtValue
                 
                 # Check for netExposure first
                 net_val = 0.0
                 if 'netExposure' in data:
-                    net_val = float(data['netExposure'])
+                    try:
+                        net_val = float(data['netExposure'])
+                    except:
+                        net_val = 0.0
                 elif 'collateralValue' in data and 'debtValue' in data:
-                    net_val = float(data['collateralValue']) - float(data['debtValue'])
+                    try:
+                        net_val = float(data['collateralValue']) - float(data['debtValue'])
+                    except:
+                        net_val = 0.0
                 
                 # Aggregate APY (yieldApyAggregate)
-                apy = float(data.get('yieldApyAggregate', 0.0))
+                try:
+                    apy = float(data.get('yieldApyAggregate', 0.0))
+                except:
+                    apy = 0.0
                 
-                loop_stats['count'] += 1
-                loop_stats['total_usd'] += net_val
-                loop_stats['weighted_apy_sum'] += (net_val * apy)
+                if net_val > 0:
+                    loop_stats['count'] += 1
+                    loop_stats['total_usd'] += net_val
+                    loop_stats['weighted_apy_sum'] += (net_val * apy)
 
             # 2. Fetch CEX Positions
             cex_ref = self.db.collection('cex_positions')
             cex_docs = cex_ref.stream()
             
             cex_stats = {
+                'count': 0,
                 'total_usd': 0.0,
                 'weighted_apy_sum': 0.0
             }
 
             for doc in cex_docs:
                 data = doc.to_dict()
-                usd_val = float(data.get('usdValue', 0.0))
+                try:
+                    usd_val = float(data.get('usdValue', 0.0))
+                except:
+                    usd_val = 0.0
                 
                 # Parse APY (might be string "2.17%" or number)
                 raw_apy = data.get('apy', 0)
                 apy = 0.0
-                if isinstance(raw_apy, (int, float)):
-                    apy = float(raw_apy)
-                elif isinstance(raw_apy, str):
-                    apy = float(raw_apy.replace('%', '').strip())
+                try:
+                    if isinstance(raw_apy, (int, float)):
+                        apy = float(raw_apy)
+                    elif isinstance(raw_apy, str):
+                        clean_apy = raw_apy.replace('%', '').strip()
+                        if clean_apy:
+                             apy = float(clean_apy)
+                except:
+                    apy = 0.0
                 
-                cex_stats['total_usd'] += usd_val
-                cex_stats['weighted_apy_sum'] += (usd_val * apy)
+                if usd_val > 0:
+                    cex_stats['count'] += 1
+                    cex_stats['total_usd'] += usd_val
+                    cex_stats['weighted_apy_sum'] += (usd_val * apy)
 
             # 3. Fetch Standard Positions
             pos_ref = self.db.collection('positions')
@@ -91,21 +111,31 @@ class FirebaseService:
             pos_stats = {
                 'total_usd': 0.0,
                 'weighted_apy_sum': 0.0,
-                'count': 0 # Active protocols count approximation
+                'count': 0,
+                'active_count': 0
             }
             
             active_protocols = set()
 
             for doc in pos_docs:
                 data = doc.to_dict()
-                usd_val = float(data.get('usdValue', 0.0))
-                apy = float(data.get('yieldAPY', 0.0))
+                try:
+                    usd_val = float(data.get('usdValue', 0.0))
+                except:
+                    usd_val = 0.0
+                    
+                try:
+                    apy = float(data.get('yieldAPY', 0.0))
+                except:
+                    apy = 0.0
                 
                 if 'platform' in data:
                     active_protocols.add(data['platform'])
                 
-                pos_stats['total_usd'] += usd_val
-                pos_stats['weighted_apy_sum'] += (usd_val * apy)
+                if usd_val > 0:
+                    pos_stats['active_count'] += 1
+                    pos_stats['total_usd'] += usd_val
+                    pos_stats['weighted_apy_sum'] += (usd_val * apy)
             
             # --- Aggregation ---
             total_net_worth = loop_stats['total_usd'] + cex_stats['total_usd'] + pos_stats['total_usd']
@@ -122,26 +152,52 @@ class FirebaseService:
             cex_apy = cex_stats['weighted_apy_sum'] / cex_stats['total_usd'] if cex_stats['total_usd'] > 0 else 0
             defi_apy = pos_stats['weighted_apy_sum'] / pos_stats['total_usd'] if pos_stats['total_usd'] > 0 else 0
 
-            # Count active protocols (Loops are also protocols, usually multi)
+            # Count active protocols
             total_active_protocols = loop_stats['count'] + len(active_protocols)
 
-            return {
+            stats_data = {
                 "total_net_worth": round(total_net_worth, 2),
-                "change_24h": 0.0, # Not tracking history yet
-                "risk_score": 75, # Placeholder until AI analysis
+                "change_24h": 0.0, 
+                "risk_score": 75,
                 "active_protocols": total_active_protocols,
                 "yield_apy": round(avg_apy, 2),
                 "monthly_income": round(monthly_income, 2),
                 "breakdown": {
-                    "loops": {"value": loop_stats['total_usd'], "apy": round(loop_apy, 2)},
-                    "cex": {"value": cex_stats['total_usd'], "apy": round(cex_apy, 2)},
-                    "defi": {"value": pos_stats['total_usd'], "apy": round(defi_apy, 2)}
-                }
+                    "loops": {
+                        "value": round(loop_stats['total_usd'], 2), 
+                        "apy": round(loop_apy, 2),
+                        "count": loop_stats['count']
+                    },
+                    "cex": {
+                        "value": round(cex_stats['total_usd'], 2), 
+                        "apy": round(cex_apy, 2),
+                        "count": cex_stats['count']
+                    },
+                    "defi": {
+                        "value": round(pos_stats['total_usd'], 2), 
+                        "apy": round(defi_apy, 2),
+                        "count": pos_stats['active_count']
+                    }
+                },
+                "timestamp": datetime.now().isoformat()
             }
+            
+            # Save Snapshot
+            self.save_snapshot(stats_data)
+            
+            return stats_data
 
         except Exception as e:
             logger.error(f"Error aggregating stats: {e}")
             return self._get_empty_stats()
+
+    def save_snapshot(self, stats):
+        try:
+            # Create a new document in 'portfolio_snapshots'
+            self.db.collection('portfolio_snapshots').add(stats)
+            logger.info("Saved portfolio snapshot")
+        except Exception as e:
+            logger.error(f"Failed to save snapshot: {e}")
 
     def _get_empty_stats(self):
         return {
@@ -150,7 +206,12 @@ class FirebaseService:
             "risk_score": 0,
             "active_protocols": 0,
             "yield_apy": 0.0,
-            "monthly_income": 0.0
+            "monthly_income": 0.0,
+            "breakdown": {
+                "loops": {"value": 0, "apy": 0, "count": 0},
+                "cex": {"value": 0, "apy": 0, "count": 0},
+                "defi": {"value": 0, "apy": 0, "count": 0}
+            }
         }
 
 # Singleton
