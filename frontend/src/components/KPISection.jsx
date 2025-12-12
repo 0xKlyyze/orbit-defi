@@ -1,16 +1,16 @@
 import React from 'react';
-import { Wallet, TrendingUp, ShieldAlert, Activity } from 'lucide-react';
+import { Wallet, TrendingUp, ShieldAlert, Activity, Zap, Layers, Landmark } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
-// Mock Data for Charts
+// Mock Data for Charts (Keep until we implement history collection)
 const portfolioHistory = [
-  { name: 'Mon', value: 120000 },
-  { name: 'Tue', value: 122000 },
-  { name: 'Wed', value: 121500 },
-  { name: 'Thu', value: 123800 },
-  { name: 'Fri', value: 124500 },
-  { name: 'Sat', value: 126000 },
-  { name: 'Sun', value: 128450 },
+  { name: 'Mon', value: 13500 },
+  { name: 'Tue', value: 13600 },
+  { name: 'Wed', value: 13550 },
+  { name: 'Thu', value: 13700 },
+  { name: 'Fri', value: 13770 },
+  { name: 'Sat', value: 13800 },
+  { name: 'Sun', value: 13850 },
 ];
 
 const riskData = [
@@ -49,6 +49,9 @@ const KPISection = ({ stats }) => {
                   <TrendingUp className="w-3 h-3" />
                   +{stats?.change_24h}% (24h)
                 </span>
+                <span className="text-gray-500 text-sm ml-2">
+                   {stats?.active_protocols ?? 0} Active Sources
+                </span>
               </div>
             </div>
             {/* Mini Chart */}
@@ -66,35 +69,28 @@ const KPISection = ({ stats }) => {
               </ResponsiveContainer>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Risk Radar */}
-      <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-[#141414] rounded-[32px] p-6 border border-[#222] relative overflow-hidden">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#FF6633]/10 rounded-xl">
-              <ShieldAlert className="w-5 h-5 text-[#FF6633]" />
-            </div>
-            <div>
-              <h3 className="text-white font-semibold">Risk Analysis</h3>
-              <p className="text-xs text-gray-400">AI Safety Score: <span className="text-[#33FFCC]">{stats?.risk_score ?? 0}/100</span></p>
-            </div>
+          
+          {/* Breakdown Mini-Bar */}
+          <div className="flex gap-4 mt-8 pt-6 border-t border-[#222]/50">
+             <div className="flex flex-col">
+                <span className="text-xs text-gray-500 uppercase">Loops</span>
+                <span className="text-white font-mono">${stats?.breakdown?.loops?.value?.toLocaleString() ?? '0'}</span>
+             </div>
+             <div className="w-px h-8 bg-[#333]"></div>
+             <div className="flex flex-col">
+                <span className="text-xs text-gray-500 uppercase">DeFi</span>
+                <span className="text-white font-mono">${stats?.breakdown?.defi?.value?.toLocaleString() ?? '0'}</span>
+             </div>
+             <div className="w-px h-8 bg-[#333]"></div>
+             <div className="flex flex-col">
+                <span className="text-xs text-gray-500 uppercase">CEX</span>
+                <span className="text-white font-mono">${stats?.breakdown?.cex?.value?.toLocaleString() ?? '0'}</span>
+             </div>
           </div>
         </div>
-        <div className="h-[200px] w-full relative z-10">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={riskData}>
-              <PolarGrid stroke="#333" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#666', fontSize: 10 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
-              <Radar name="Portfolio" dataKey="A" stroke="#FF6633" strokeWidth={2} fill="#FF6633" fillOpacity={0.2} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
       </div>
 
-      {/* Yield Widget */}
+      {/* Yield Widget (Updated with Breakdown) */}
       <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-[#141414] rounded-[32px] p-6 border border-[#222]">
          <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -102,8 +98,8 @@ const KPISection = ({ stats }) => {
               <Activity className="w-5 h-5 text-[#8B5CF6]" />
             </div>
             <div>
-              <h3 className="text-white font-semibold">Active Yield</h3>
-              <p className="text-xs text-gray-400">{stats?.active_protocols ?? 0} Active Protocols</p>
+              <h3 className="text-white font-semibold">Yield Pulse</h3>
+              <p className="text-xs text-gray-400">Aggregated Income</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -113,14 +109,43 @@ const KPISection = ({ stats }) => {
             </span>
           </div>
         </div>
+        
         <div className="space-y-4">
+           {/* Total APY & Income */}
            <div className="flex justify-between items-center p-4 bg-[#1A1A1A] rounded-2xl border border-[#222]">
-              <span className="text-gray-400 text-sm">Avg. APY</span>
-              <span className="text-xl font-bold text-[#33FFCC]">{stats?.yield_apy}%</span>
+              <div>
+                <span className="block text-gray-400 text-xs">Avg. APY</span>
+                <span className="text-xl font-bold text-[#33FFCC]">{stats?.yield_apy}%</span>
+              </div>
+              <div className="text-right">
+                <span className="block text-gray-400 text-xs">Est. Monthly</span>
+                <span className="text-xl font-bold text-white">${stats?.monthly_income}</span>
+              </div>
            </div>
-           <div className="flex justify-between items-center p-4 bg-[#1A1A1A] rounded-2xl border border-[#222]">
-              <span className="text-gray-400 text-sm">Est. Monthly</span>
-              <span className="text-xl font-bold text-white">${stats?.monthly_income}</span>
+
+           {/* Yield Breakdown List */}
+           <div className="space-y-2">
+              <div className="flex items-center justify-between p-2 rounded-lg hover:bg-[#222] transition-colors">
+                 <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#FFE066]" />
+                    <span className="text-sm text-gray-300">Looping</span>
+                 </div>
+                 <span className="text-sm font-mono text-[#FFE066]">{stats?.breakdown?.loops?.apy ?? 0}%</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg hover:bg-[#222] transition-colors">
+                 <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#3385FF]" />
+                    <span className="text-sm text-gray-300">DeFi Positions</span>
+                 </div>
+                 <span className="text-sm font-mono text-[#3385FF]">{stats?.breakdown?.defi?.apy ?? 0}%</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg hover:bg-[#222] transition-colors">
+                 <div className="flex items-center gap-2">
+                    <Landmark className="w-4 h-4 text-[#FF6633]" />
+                    <span className="text-sm text-gray-300">CEX Staking</span>
+                 </div>
+                 <span className="text-sm font-mono text-[#FF6633]">{stats?.breakdown?.cex?.apy ?? 0}%</span>
+              </div>
            </div>
         </div>
       </div>

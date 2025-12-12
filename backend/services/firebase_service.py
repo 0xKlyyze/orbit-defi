@@ -117,8 +117,12 @@ class FirebaseService:
 
             monthly_income = (total_net_worth * (avg_apy / 100)) / 12
             
+            # Segment APYs
+            loop_apy = loop_stats['weighted_apy_sum'] / loop_stats['total_usd'] if loop_stats['total_usd'] > 0 else 0
+            cex_apy = cex_stats['weighted_apy_sum'] / cex_stats['total_usd'] if cex_stats['total_usd'] > 0 else 0
+            defi_apy = pos_stats['weighted_apy_sum'] / pos_stats['total_usd'] if pos_stats['total_usd'] > 0 else 0
+
             # Count active protocols (Loops are also protocols, usually multi)
-            # Simplification: Active Loops + Unique Standard Protocols
             total_active_protocols = loop_stats['count'] + len(active_protocols)
 
             return {
@@ -129,9 +133,9 @@ class FirebaseService:
                 "yield_apy": round(avg_apy, 2),
                 "monthly_income": round(monthly_income, 2),
                 "breakdown": {
-                    "loops": loop_stats['total_usd'],
-                    "cex": cex_stats['total_usd'],
-                    "defi": pos_stats['total_usd']
+                    "loops": {"value": loop_stats['total_usd'], "apy": round(loop_apy, 2)},
+                    "cex": {"value": cex_stats['total_usd'], "apy": round(cex_apy, 2)},
+                    "defi": {"value": pos_stats['total_usd'], "apy": round(defi_apy, 2)}
                 }
             }
 

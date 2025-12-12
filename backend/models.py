@@ -18,6 +18,7 @@ class PortfolioStats(BaseModel):
     monthly_income: float
     
 class ChatMessage(BaseModel):
+    breakdown: Dict[str, Any] = {}
     role: str
     content: str
 
