@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutGrid, Layers, Activity } from 'lucide-react';
+import { LayoutGrid, Layers, Activity, BrainCircuit } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -9,6 +9,7 @@ const Sidebar = () => {
     { to: '/', icon: LayoutGrid, label: 'Positions' },
     { to: '/liquid-restaking', icon: Layers, label: 'Liquid Restaking' },
     { to: '/cex-staking', icon: Activity, label: 'CEX Staking' },
+    { to: '/ai-dashboard', icon: BrainCircuit, label: 'AI Dashboard' },
   ];
 
   return (

@@ -14,51 +14,71 @@
 # Main and testing agents must follow this exact format to maintain testing data. 
 # The testing data must be entered in yaml format Below is the data structure:
 # 
-## user_problem_statement: {problem_statement}
+## user_problem_statement: Build the new AI-Powered Dashboard for Orbit.
 ## backend:
-##   - task: "Task name"
+##   - task: "Setup Dashboard API Endpoints"
 ##     implemented: true
-##     working: true  # or false or "NA"
-##     file: "file_path.py"
+##     working: true
+##     file: "/app/backend/routers/dashboard.py"
 ##     stuck_count: 0
-##     priority: "high"  # or "medium" or "low"
+##     priority: "high"
 ##     needs_retesting: false
 ##     status_history:
-##         -working: true  # or false or "NA"
-##         -agent: "main"  # or "testing" or "user"
-##         -comment: "Detailed comment about status"
+##         -working: true
+##         -agent: "main"
+##         -comment: "Implemented endpoints and verified with curl."
+##   - task: "Integrate Real Firebase Data"
+##     implemented: true
+##     working: true
+##     file: "/app/backend/services/firebase_service.py"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: false
+##     status_history:
+##         -working: true
+##         -agent: "main"
+##         -comment: "Implemented Firebase Admin aggregation logic, robust APY parsing, and Snapshot saving."
+##   - task: "Implement AI Analysis Logic"
+##     implemented: true
+##     working: true
+##     file: "/app/backend/services/gemini_service.py"
+##     stuck_count: 0
+##     priority: "high"
+##     needs_retesting: true
+##     status_history:
+##         -working: "true"
+##         -agent: "main"
+##         -comment: "Implemented full context generation, prompt engineering for JSON output, and 1-week cache logic."
 ##
 ## frontend:
-##   - task: "Task name"
+##   - task: "Create Dashboard Page"
 ##     implemented: true
-##     working: true  # or false or "NA"
-##     file: "file_path.js"
+##     working: true
+##     file: "/app/frontend/src/pages/OrbitAIDashboard.jsx"
 ##     stuck_count: 0
-##     priority: "high"  # or "medium" or "low"
-##     needs_retesting: false
+##     priority: "high"
+##     needs_retesting: true
 ##     status_history:
-##         -working: true  # or false or "NA"
-##         -agent: "main"  # or "testing" or "user"
-##         -comment: "Detailed comment about status"
+##         -working: "NA"
+##         -agent: "main"
+##         -comment: "Updated to fetch and display AI insights and risk metrics."
 ##
 ## metadata:
 ##   created_by: "main_agent"
-##   version: "1.0"
-##   test_sequence: 0
+##   version: "1.6"
+##   test_sequence: 6
 ##   run_ui: false
 ##
 ## test_plan:
 ##   current_focus:
-##     - "Task name 1"
-##     - "Task name 2"
-##   stuck_tasks:
-##     - "Task name with persistent issues"
+##     - "Verify UI in Browser"
+##   stuck_tasks: []
 ##   test_all: false
-##   test_priority: "high_first"  # or "sequential" or "stuck_first"
+##   test_priority: "sequential"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##     -agent: "main"
+##     -message: "Implemented AI analysis generation with caching and frontend integration."
 
 # Protocol Guidelines for Main agent
 #

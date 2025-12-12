@@ -7,6 +7,7 @@ import PositionsDashboard from '@/pages/PositionsDashboard';
 import LiquidRestakingDashboard from '@/pages/LiquidRestakingDashboard';
 import CEXStakingDashboard from '@/pages/CEXStakingDashboard';
 
+import OrbitAIDashboard from '@/pages/OrbitAIDashboard';
 function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-zinc-950 to-red-950/20" data-testid="orbit-app">
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<PositionsDashboard />} />
           <Route path="/liquid-restaking" element={<LiquidRestakingDashboard />} />
           <Route path="/cex-staking" element={<CEXStakingDashboard />} />
+          <Route path="/ai-dashboard" element={<OrbitAIDashboard />} />
         </Routes>
       </BrowserRouter>
     </div>

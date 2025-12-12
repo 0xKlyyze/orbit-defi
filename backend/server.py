@@ -5,8 +5,12 @@ import os
 import logging
 from pathlib import Path
 
+# Load environment variables FIRST before importing other modules
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Now it's safe to import modules that might use env vars at module level
+from routers import dashboard
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -25,6 +29,7 @@ async def health_check():
 
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(dashboard.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
