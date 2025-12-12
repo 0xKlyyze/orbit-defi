@@ -355,10 +355,8 @@ const OrbitLoopDashboard = () => {
   return (
     <div className="min-h-screen font-sans selection:bg-[#FFE066] selection:text-black" style={{ backgroundColor: COLORS.bg }}>
       
-      {/* Global sidebar is now provided by App-level layout */}
-
-      {/* 2. Main Content */}
-      <main className="pl-20 p-8 max-w-[1600px] mx-auto">
+      {/* 2. Main Content (framed layout handles left rail) */}
+      <main className="p-8 max-w-[1600px] mx-auto">
         
         {/* Header Section */}
         <header className="flex justify-between items-end mb-10">

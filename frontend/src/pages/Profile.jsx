@@ -2,7 +2,7 @@ import React from 'react';
 
 const Profile = () => {
   return (
-    <main className="ml-20 p-8 text-white max-w-[1600px] mx-auto">
+<main className="p-8 text-white max-w-[1600px] mx-auto">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
         <p className="text-[#666] text-sm">Manage your Orbit settings and preferences.</p>

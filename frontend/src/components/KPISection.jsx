@@ -147,6 +147,16 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center text-xs">💹</div>
+                  <div>
+                    <p className="text-white text-sm font-medium">CEX Yield</p>
+                    <p className="text-[#666] text-xs">Exchange Staking</p>
+                  </div>
+              </div>
+              <span className="text-[#33FFCC] font-mono text-lg">{stats?.breakdown?.cex?.apy ?? 0}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center text-xs">🏦</div>
                   <div>
                     <p className="text-white text-sm font-medium">Lending</p>

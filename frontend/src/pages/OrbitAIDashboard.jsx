@@ -212,7 +212,7 @@ const OrbitAIDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 md:p-8 ml-20"> {/* ml-20 to account for fixed sidebar */}
+  <div className="min-h-screen bg-black text-white p-6 md:p-8">
       {/* Ambient Background */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#8B5CF6]/10 rounded-full blur-[150px]" />
@@ -223,7 +223,7 @@ const OrbitAIDashboard = () => {
         {/* Header */}
         <header className="flex justify-between items-center mb-12">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500 mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500 mb-2 pb-1">
               Good evening, Commander
             </h1>
             <div className="flex items-center gap-2">

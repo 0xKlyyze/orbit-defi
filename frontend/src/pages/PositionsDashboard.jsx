@@ -326,7 +326,7 @@ const PositionsDashboard = () => {
       {/* Global sidebar is now provided by App-level layout */}
 
       {/* 2. Main Content */}
-      <main className="flex-1 ml-20 p-8 max-w-[1600px] mx-auto">
+  <main className="flex-1 p-8 max-w-[1600px] mx-auto">
         
         {/* Header */}
         <header className="flex justify-between items-end mb-10">

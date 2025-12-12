@@ -2,7 +2,7 @@ import React from 'react';
 import '@/App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import Sidebar from '@/components/Sidebar';
+import FramedAppLayout from '@/components/Layout/FramedAppLayout';
 import PositionsDashboard from '@/pages/PositionsDashboard';
 import LiquidRestakingDashboard from '@/pages/LiquidRestakingDashboard';
 import CEXStakingDashboard from '@/pages/CEXStakingDashboard';
@@ -15,15 +15,16 @@ function App() {
       <Toaster position="top-right" theme="dark" />
       
       <BrowserRouter>
-        <Sidebar />
-        <Routes>
-          <Route path="/" element={<OrbitAIDashboard />} />
-          <Route path="/positions" element={<PositionsDashboard />} />
-          <Route path="/liquid-restaking" element={<LiquidRestakingDashboard />} />
-          <Route path="/cex-staking" element={<CEXStakingDashboard />} />
-          <Route path="/ai-dashboard" element={<OrbitAIDashboard />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
+        <FramedAppLayout>
+          <Routes>
+            <Route path="/" element={<OrbitAIDashboard />} />
+            <Route path="/positions" element={<PositionsDashboard />} />
+            <Route path="/liquid-restaking" element={<LiquidRestakingDashboard />} />
+            <Route path="/cex-staking" element={<CEXStakingDashboard />} />
+            <Route path="/ai-dashboard" element={<OrbitAIDashboard />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </FramedAppLayout>
       </BrowserRouter>
     </div>
   );
