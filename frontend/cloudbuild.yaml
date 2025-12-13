@@ -8,7 +8,7 @@ steps:
       - |
         gcloud secrets describe GEMINI_API_KEY || gcloud secrets create GEMINI_API_KEY --replication-policy=automatic
 
-  # Optionally add/rotate secret version from trigger substitution
+  # Optionally add/rotate secret version from trigger substitution PEPE CHICKEN
   - name: gcr.io/google.com/cloudsdk/gcloud
     id: Rotate GEMINI_API_KEY version (from trigger)
     entrypoint: bash
