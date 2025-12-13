@@ -15,17 +15,20 @@ export class FirebaseService {
   constructor() {
     try {
       const credPath = process.env.FIREBASE_CREDENTIALS_PATH || path.join(__dirname, "../../firebase_credentials.json");
-      if (!fs.existsSync(credPath)) {
-        logger.error({ credPath }, "Firebase credentials not found");
-        this.db = null;
-        return;
-      }
-      const serviceAccount = JSON.parse(fs.readFileSync(credPath, "utf-8"));
-      if (getApps().length === 0) {
-        initializeApp({ credential: cert(serviceAccount) });
+      if (fs.existsSync(credPath)) {
+        const serviceAccount = JSON.parse(fs.readFileSync(credPath, "utf-8"));
+        if (getApps().length === 0) {
+          initializeApp({ credential: cert(serviceAccount) });
+        }
+        logger.info("Firebase Admin initialized successfully (service account file)");
+      } else {
+        // Fallback to Application Default Credentials (ADC) on GCP
+        if (getApps().length === 0) {
+          initializeApp();
+        }
+        logger.info("Firebase Admin initialized successfully (ADC fallback)");
       }
       this.db = getFirestore();
-      logger.info("Firebase Admin initialized successfully");
     } catch (e) {
       logger.error({ err: e }, "Failed to initialize Firebase Admin");
       this.db = null;

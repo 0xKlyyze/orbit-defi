@@ -68,6 +68,8 @@
   "scripts": {
     "start": "craco start",
     "api:start": "ts-node --project server/tsconfig.json server/src/index.ts",
+    "api:build": "tsc -p server/tsconfig.json",
+    "api:start:prod": "node server/dist/index.js",
     "build": "craco build",
     "test": "craco test"
   },

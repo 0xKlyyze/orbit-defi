@@ -1,0 +1,21 @@
+# Ignore files not needed for App Engine deployment
+
+# Node modules are installed by the runtime/build step
+node_modules/
+
+# Frontend artifacts and sources
+build/
+src/
+public/
+plugins/
+
+# Local credentials or secrets (use ADC/Secret Manager in production)
+server/firebase_credentials.json
+
+# Tests/coverage and misc
+coverage/
+.pnp/
+.pnp.js
+.DS_Store
+.git/
+.gitignore

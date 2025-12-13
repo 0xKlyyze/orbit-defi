@@ -1,0 +1,12 @@
+node_modules/
+build/
+src/
+public/
+plugins/
+coverage/
+.pnp/
+.pnp.js
+.DS_Store
+.git/
+.gitignore
+server/firebase_credentials.json

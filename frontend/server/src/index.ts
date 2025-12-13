@@ -30,7 +30,8 @@ api.get("/health", (_req, res) => res.json({ status: "healthy", service: "orbit-
 app.use("/api", api);
 app.use("/api", dashboardRouter);
 
-const port = Number(process.env.API_PORT || 4000);
+// Prefer App Engine provided PORT, fallback to API_PORT or 4000
+const port = Number(process.env.PORT || process.env.API_PORT || 4000);
 app.listen(port, () => {
   logger.info(`Orbit API listening on http://localhost:${port}/api`);
 });

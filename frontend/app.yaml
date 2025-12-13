@@ -1,0 +1,12 @@
+# Note: App Engine config is no longer used (Cloud Run deploy).
+# Keeping this file with placeholders to avoid accidental secret leakage.
+runtime: nodejs20
+service: api
+
+env_variables:
+  LOG_LEVEL: "info"
+  # Use domain only (no trailing slash)
+  CORS_ORIGINS: "https://orbit-defi.netlify.app"
+  GEMINI_MODEL: "gemini-3-pro-preview"
+  RESEARCH_ENABLED: "true"
+  RESEARCH_PROVIDER: "coingecko"

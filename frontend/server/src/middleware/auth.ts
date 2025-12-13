@@ -13,13 +13,15 @@ function ensureFirebaseAdminInit() {
   if (getApps().length === 0) {
     try {
       const credPath = process.env.FIREBASE_CREDENTIALS_PATH || path.join(process.cwd(), 'server/firebase_credentials.json');
-      if (!fs.existsSync(credPath)) {
-        logger.error({ credPath }, '[auth] Firebase credentials not found');
-        return;
+      if (fs.existsSync(credPath)) {
+        const serviceAccount = JSON.parse(fs.readFileSync(credPath, 'utf-8'));
+        initializeApp({ credential: cert(serviceAccount) });
+        logger.info('[auth] Firebase Admin initialized (service account file)');
+      } else {
+        // Fallback to Application Default Credentials (ADC) on GCP
+        initializeApp();
+        logger.info('[auth] Firebase Admin initialized (ADC fallback)');
       }
-      const serviceAccount = JSON.parse(fs.readFileSync(credPath, 'utf-8'));
-      initializeApp({ credential: cert(serviceAccount) });
-      logger.info('[auth] Firebase Admin initialized');
     } catch (e) {
       logger.error({ err: e }, '[auth] Failed to initialize Firebase Admin');
     }
