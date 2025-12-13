@@ -16,6 +16,7 @@ import {
   ExternalLink,
   FileText
 } from 'lucide-react';
+import OrbitSelect from '@/components/ui/OrbitSelect';
 import { 
   PieChart, 
   Pie, 
@@ -169,8 +170,11 @@ const PositionsDashboard = () => {
   });
 
   // --- EFFECTS ---
+  const [pageLoaded, setPageLoaded] = useState(false);
   useEffect(() => {
     loadPositions();
+    const t = setTimeout(() => setPageLoaded(true), 50);
+    return () => clearTimeout(t);
   }, []);
 
   // Quick-open new position modal from dashboard pill
@@ -326,7 +330,7 @@ const PositionsDashboard = () => {
       {/* Global sidebar is now provided by App-level layout */}
 
       {/* 2. Main Content */}
-  <main className="flex-1 p-8 max-w-[1600px] mx-auto">
+  <main className={`flex-1 p-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out ${pageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
         
         {/* Header */}
         <header className="flex justify-between items-end mb-10">
@@ -340,23 +344,15 @@ const PositionsDashboard = () => {
           
           <div className="flex gap-4">
              {/* Filter Toggles */}
-             <div className="relative">
-                <button className="h-12 px-6 rounded-full border border-[#333] text-white flex items-center gap-2 hover:bg-[#141414] transition-colors bg-[#050505] min-w-[160px] justify-between">
-                  <div className="flex items-center gap-2">
-                    <Wallet size={16} className="text-[#888]" />
-                    <span className="truncate max-w-[100px]">{filters.wallet === 'all' ? 'All Wallets' : filters.wallet}</span>
-                  </div>
-                  <ChevronDown size={14} className="text-[#444]" />
-                </button>
-                <select 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  value={filters.wallet}
-                  onChange={(e) => setFilters(prev => ({ ...prev, wallet: e.target.value }))}
-                >
-                  <option value="all">All Wallets</option>
-                  {uniqueWallets.map(w => <option key={w} value={w}>{w}</option>)}
-                </select>
-             </div>
+             <OrbitSelect
+               value={filters.wallet}
+               onChange={(v) => setFilters(prev => ({ ...prev, wallet: v }))}
+               options={[ 'all', ...uniqueWallets ]}
+               placeholder="All Wallets"
+               icon={<Wallet size={16} className="text-[#888]" />}
+               className="border-[#333] w-48 hover:bg-[#141414]"
+               contentClassName="min-w-[200px]"
+             />
 
              {/* Add Button */}
              <button 

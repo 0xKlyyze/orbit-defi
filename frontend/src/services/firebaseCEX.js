@@ -1,11 +1,12 @@
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy } from 'firebase/firestore';
 
 export const addCEXPosition = async (position) => {
   try {
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
     const createdAt = new Date().toISOString();
     const lastUpdated = createdAt;
-    const docRef = await addDoc(collection(db, 'cex_positions'), {
+    const docRef = await addDoc(collection(db, 'users', uid, 'cex_positions'), {
       ...position,
       createdAt,
       lastUpdated
@@ -19,7 +20,8 @@ export const addCEXPosition = async (position) => {
 
 export const updateCEXPosition = async (id, updates) => {
   try {
-    const positionRef = doc(db, 'cex_positions', id);
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    const positionRef = doc(db, 'users', uid, 'cex_positions', id);
     await updateDoc(positionRef, {
       ...updates,
       lastUpdated: new Date().toISOString()
@@ -33,7 +35,8 @@ export const updateCEXPosition = async (id, updates) => {
 
 export const deleteCEXPosition = async (id) => {
   try {
-    await deleteDoc(doc(db, 'cex_positions', id));
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    await deleteDoc(doc(db, 'users', uid, 'cex_positions', id));
     return id;
   } catch (error) {
     console.error('Error deleting CEX position:', error);
@@ -43,7 +46,8 @@ export const deleteCEXPosition = async (id) => {
 
 export const getCEXPositions = async () => {
   try {
-    const q = query(collection(db, 'cex_positions'), orderBy('createdAt', 'desc'));
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    const q = query(collection(db, 'users', uid, 'cex_positions'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     const positions = [];
     querySnapshot.forEach((doc) => {

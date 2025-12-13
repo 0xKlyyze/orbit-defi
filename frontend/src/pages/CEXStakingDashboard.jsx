@@ -22,6 +22,7 @@ import {
   Tooltip as RechartsTooltip 
 } from 'recharts';
 import { toast } from 'sonner';
+import OrbitSelect from '@/components/ui/OrbitSelect';
 
 // --- IMPORTS FROM SOURCE A (Functional) ---
 import CEXPositionForm from '@/components/CEXPositionForm';
@@ -195,6 +196,13 @@ const CEXStakingDashboard = () => {
   // --- ORBIT UI STATE ---
   const [activeTab, setActiveTab] = useState('active'); // Maps to showWithdrawn logic
 
+  // Page load animation state (must be before any conditional returns)
+  const [pageReady, setPageReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setPageReady(true), 30);
+    return () => clearTimeout(t);
+  }, []);
+
   // --- EFFECTS ---
   useEffect(() => {
     loadPositions();
@@ -357,7 +365,7 @@ const CEXStakingDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen font-sans selection:bg-[#FFE066] selection:text-black" style={{ backgroundColor: COLORS.bg }}>
+    <div className={`min-h-screen font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
 
       {/* 2. Main Content (framed layout handles left rail) */}
       <main className="p-8 max-w-[1600px] mx-auto">
@@ -388,28 +396,25 @@ const CEXStakingDashboard = () => {
             </div>
 
             {/* Status Filter Dropdown */}
-            <div className="relative">
-              <button className="h-12 px-6 rounded-full border border-[#333] text-white flex items-center gap-2 hover:bg-[#141414] transition-colors min-w-[160px] justify-between">
-                <div className="flex items-center gap-2">
-                  {withdrawalFilter === 'All' && <Layers size={16} className="text-[#888]" />}
-                  {withdrawalFilter === 'Can Withdraw Now' && <Unlock size={16} className="text-[#33FFCC]" />}
-                  {withdrawalFilter === 'Locked' && <Lock size={16} className="text-[#FF6633]" />}
-                  {withdrawalFilter === 'Pending' && <Clock size={16} className="text-[#FFE066]" />}
-                  <span>{withdrawalFilter === 'All' ? 'All Status' : withdrawalFilter}</span>
-                </div>
-                <ChevronDown size={14} className="text-[#444]" />
-              </button>
-              <select 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                value={withdrawalFilter}
-                onChange={(e) => setWithdrawalFilter(e.target.value)}
-              >
-                <option value="All">All Status</option>
-                <option value="Can Withdraw Now">Can Withdraw Now</option>
-                <option value="Pending">Pending</option>
-                <option value="Locked">Locked</option>
-              </select>
-            </div>
+            {(() => {
+              const statusIcon = (
+                withdrawalFilter === 'Can Withdraw Now' ? <Unlock size={16} className="text-[#33FFCC]" /> :
+                withdrawalFilter === 'Locked' ? <Lock size={16} className="text-[#FF6633]" /> :
+                withdrawalFilter === 'Pending' ? <Clock size={16} className="text-[#FFE066]" /> :
+                <Layers size={16} className="text-[#888]" />
+              );
+              return (
+                <OrbitSelect
+                  value={withdrawalFilter}
+                  onChange={(val) => setWithdrawalFilter(val)}
+                  options={["All", "Can Withdraw Now", "Pending", "Locked"]}
+                  placeholder="All Status"
+                  icon={statusIcon}
+                  className="min-w-[180px] border-[#333] hover:bg-[#141414]"
+                  contentClassName="border-[#333]"
+                />
+              );
+            })()}
             
             {/* Primary Action */}
             <button 

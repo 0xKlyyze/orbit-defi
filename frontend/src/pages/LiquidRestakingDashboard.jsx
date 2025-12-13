@@ -20,6 +20,7 @@ import {
   Tooltip as RechartsTooltip 
 } from 'recharts';
 import { toast } from 'sonner';
+import OrbitSelect from '@/components/ui/OrbitSelect';
 
 // --- IMPORTS FROM SOURCE A (Functional) ---
 // Assuming these paths exist based on the provided functional code
@@ -206,6 +207,13 @@ const OrbitLoopDashboard = () => {
   // UI State from Source B
   const [activeTab, setActiveTab] = useState('active');
 
+  // Page load animation state (must be before any conditional returns)
+  const [pageReady, setPageReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setPageReady(true), 30);
+    return () => clearTimeout(t);
+  }, []);
+
   // Load Data
   useEffect(() => {
     loadLoops();
@@ -353,7 +361,7 @@ const OrbitLoopDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen font-sans selection:bg-[#FFE066] selection:text-black" style={{ backgroundColor: COLORS.bg }}>
+    <div className={`min-h-screen font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
       
       {/* 2. Main Content (framed layout handles left rail) */}
       <main className="p-8 max-w-[1600px] mx-auto">
@@ -370,42 +378,26 @@ const OrbitLoopDashboard = () => {
           
           <div className="flex gap-4">
             {/* Wallet Filter */}
-            <div className="relative">
-              <button className="h-12 px-6 rounded-full border border-[#333] text-white flex items-center gap-2 hover:bg-[#141414] transition-colors w-48 justify-between">
-                <div className="flex items-center gap-2 truncate">
-                  <Wallet size={16} className="text-[#888]" />
-                  <span className="truncate">{filters.wallet === 'all' ? 'All Wallets' : filters.wallet}</span>
-                </div>
-                <ChevronDown size={14} className="text-[#444]" />
-              </button>
-              <select 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                value={filters.wallet}
-                onChange={(e) => setFilters(prev => ({ ...prev, wallet: e.target.value }))}
-              >
-                <option value="all">All Wallets</option>
-                {uniqueWallets.map(w => <option key={w} value={w}>{w}</option>)}
-              </select>
-            </div>
+            <OrbitSelect
+              value={filters.wallet}
+              onChange={(val) => setFilters(prev => ({ ...prev, wallet: val }))}
+              options={["all", ...uniqueWallets]}
+              placeholder="All Wallets"
+              icon={<Wallet size={16} className="text-[#888]" />}
+              className="w-48 border-[#333] hover:bg-[#141414]"
+              contentClassName="border-[#333]"
+            />
 
             {/* Chain Filter */}
-            <div className="relative">
-              <button className="h-12 px-6 rounded-full border border-[#333] text-white flex items-center gap-2 hover:bg-[#141414] transition-colors w-48 justify-between">
-                <div className="flex items-center gap-2 truncate">
-                  <Layers size={16} className="text-[#888]" />
-                  <span className="truncate">{filters.chain === 'all' ? 'All Chains' : filters.chain}</span>
-                </div>
-                <ChevronDown size={14} className="text-[#444]" />
-              </button>
-              <select 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                value={filters.chain}
-                onChange={(e) => setFilters(prev => ({ ...prev, chain: e.target.value }))}
-              >
-                <option value="all">All Chains</option>
-                {uniqueChains.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
+            <OrbitSelect
+              value={filters.chain}
+              onChange={(val) => setFilters(prev => ({ ...prev, chain: val }))}
+              options={["all", ...uniqueChains]}
+              placeholder="All Chains"
+              icon={<Layers size={16} className="text-[#888]" />}
+              className="w-48 border-[#333] hover:bg-[#141414]"
+              contentClassName="border-[#333]"
+            />
             
             {/* Primary Action */}
             <button 

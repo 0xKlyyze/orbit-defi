@@ -69,7 +69,10 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
                 ${typeof stats?.total_net_worth === 'number' ? stats.total_net_worth.toLocaleString() : '0.00'}
               </h2>
               <p className="text-[#33FFCC] flex items-center gap-1 text-sm font-medium">
-                  <TrendingUp size={14} /> +2.4% (24h)
+                  <TrendingUp size={14} />
+                  <span className={Number(stats?.change_24h ?? 0) >= 0 ? 'text-[#33FFCC]' : 'text-[#FF6633]'}>
+                    {Number(stats?.change_24h ?? 0) >= 0 ? '+' : ''}{Number(stats?.change_24h ?? 0).toFixed(2)}% (7d)
+                  </span>
               </p>
             </div>
 
@@ -137,7 +140,9 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
         <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center text-xs">🌀</div>
+                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center">
+                    <RefreshCcw size={16} />
+                  </div>
                   <div>
                     <p className="text-white text-sm font-medium">Loop APY</p>
                     <p className="text-[#666] text-xs">Aggregated</p>
@@ -147,7 +152,9 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center text-xs">💹</div>
+                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center">
+                    <Landmark size={16} />
+                  </div>
                   <div>
                     <p className="text-white text-sm font-medium">CEX Yield</p>
                     <p className="text-[#666] text-xs">Exchange Staking</p>
@@ -157,7 +164,9 @@ const KPISection = ({ stats, riskMetrics, riskScore }) => {
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center text-xs">🏦</div>
+                  <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center">
+                    <Wallet size={16} />
+                  </div>
                   <div>
                     <p className="text-white text-sm font-medium">Lending</p>
                     <p className="text-[#666] text-xs">Supply Side</p>

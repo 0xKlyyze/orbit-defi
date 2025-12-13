@@ -1,9 +1,10 @@
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy } from 'firebase/firestore';
 
 export const addLoop = async (loop) => {
   try {
-    const docRef = await addDoc(collection(db, 'loops'), {
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    const docRef = await addDoc(collection(db, 'users', uid, 'loops'), {
       ...loop,
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString()
@@ -17,7 +18,8 @@ export const addLoop = async (loop) => {
 
 export const updateLoop = async (id, updates) => {
   try {
-    const loopRef = doc(db, 'loops', id);
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    const loopRef = doc(db, 'users', uid, 'loops', id);
     await updateDoc(loopRef, {
       ...updates,
       lastUpdated: new Date().toISOString()
@@ -31,7 +33,8 @@ export const updateLoop = async (id, updates) => {
 
 export const deleteLoop = async (id) => {
   try {
-    await deleteDoc(doc(db, 'loops', id));
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    await deleteDoc(doc(db, 'users', uid, 'loops', id));
     return id;
   } catch (error) {
     console.error('Error deleting loop:', error);
@@ -41,7 +44,8 @@ export const deleteLoop = async (id) => {
 
 export const getLoops = async () => {
   try {
-    const q = query(collection(db, 'loops'), orderBy('lastUpdated', 'desc'));
+    const uid = auth.currentUser?.uid; if (!uid) throw new Error('Not authenticated');
+    const q = query(collection(db, 'users', uid, 'loops'), orderBy('lastUpdated', 'desc'));
     const querySnapshot = await getDocs(q);
     const loops = [];
     querySnapshot.forEach((doc) => {

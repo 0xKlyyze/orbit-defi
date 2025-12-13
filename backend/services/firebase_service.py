@@ -3,6 +3,8 @@ from firebase_admin import credentials, firestore
 import logging
 from pathlib import Path
 from datetime import datetime, timedelta
+import hashlib
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,7 @@ class FirebaseService:
                 'total_usd': 0.0,
                 'weighted_apy_sum': 0.0
             }
+            latest_loop_update = None
 
             for doc in loops_docs:
                 data = doc.to_dict()
@@ -131,6 +134,16 @@ class FirebaseService:
                     loop_stats['total_usd'] += net_val
                     loop_stats['weighted_apy_sum'] += (net_val * apy)
 
+                # Track latest update timestamp
+                try:
+                    lu = data.get('lastUpdated') or data.get('createdAt')
+                    if lu:
+                        dt = datetime.fromisoformat(str(lu))
+                        if (latest_loop_update is None) or (dt > latest_loop_update):
+                            latest_loop_update = dt
+                except Exception:
+                    pass
+
             # 2. Fetch CEX Positions
             cex_ref = self.db.collection('cex_positions')
             cex_docs = cex_ref.stream()
@@ -140,6 +153,7 @@ class FirebaseService:
                 'total_usd': 0.0,
                 'weighted_apy_sum': 0.0
             }
+            latest_cex_update = None
 
             for doc in cex_docs:
                 data = doc.to_dict()
@@ -167,6 +181,16 @@ class FirebaseService:
                     cex_stats['total_usd'] += usd_val
                     cex_stats['weighted_apy_sum'] += (usd_val * apy)
 
+                # Track latest update timestamp
+                try:
+                    lu = data.get('lastUpdated') or data.get('createdAt')
+                    if lu:
+                        dt = datetime.fromisoformat(str(lu))
+                        if (latest_cex_update is None) or (dt > latest_cex_update):
+                            latest_cex_update = dt
+                except Exception:
+                    pass
+
             # 3. Fetch Standard Positions
             pos_ref = self.db.collection('positions')
             pos_docs = pos_ref.stream()
@@ -179,6 +203,7 @@ class FirebaseService:
             }
             
             active_protocols = set()
+            latest_pos_update = None
 
             for doc in pos_docs:
                 data = doc.to_dict()
@@ -200,6 +225,16 @@ class FirebaseService:
                 if usd_val > 0:
                     pos_stats['total_usd'] += usd_val
                     pos_stats['weighted_apy_sum'] += (usd_val * apy)
+
+                # Track latest update timestamp
+                try:
+                    lu = data.get('lastUpdated') or data.get('createdAt')
+                    if lu:
+                        dt = datetime.fromisoformat(str(lu))
+                        if (latest_pos_update is None) or (dt > latest_pos_update):
+                            latest_pos_update = dt
+                except Exception:
+                    pass
             
             # --- Aggregation ---
             total_net_worth = loop_stats['total_usd'] + cex_stats['total_usd'] + pos_stats['total_usd']
@@ -246,7 +281,30 @@ class FirebaseService:
                 "timestamp": datetime.now().isoformat()
             }
             
-            # Save Snapshot
+            # Build state meta and signature (for change tracking)
+            state_meta = {
+                "loops": {
+                    "count": loop_stats['count'],
+                    "last_updated": latest_loop_update.isoformat() if latest_loop_update else None,
+                },
+                "cex": {
+                    "count": cex_stats['count'],
+                    "last_updated": latest_cex_update.isoformat() if latest_cex_update else None,
+                },
+                "defi": {
+                    "count": pos_stats['active_count'],
+                    "last_updated": latest_pos_update.isoformat() if latest_pos_update else None,
+                }
+            }
+            try:
+                signature_source = json.dumps(state_meta, sort_keys=True)
+                state_signature = hashlib.sha256(signature_source.encode('utf-8')).hexdigest()
+            except Exception:
+                state_signature = None
+            stats_data["state_meta"] = state_meta
+            stats_data["state_signature"] = state_signature
+            
+            # Save Snapshot (conditional on changes)
             self.save_snapshot(stats_data)
             
             return stats_data
@@ -256,7 +314,29 @@ class FirebaseService:
             return self._get_empty_stats()
 
     def save_snapshot(self, stats):
+        if not self.db:
+            logger.error("Cannot save snapshot: Firestore client not initialized")
+            return
         try:
+            # Check latest snapshot for state_signature match
+            latest = None
+            try:
+                docs = self.db.collection('portfolio_snapshots') \
+                    .order_by('timestamp', direction=firestore.Query.DESCENDING) \
+                    .limit(1) \
+                    .stream()
+                for doc in docs:
+                    latest = doc.to_dict()
+            except Exception as e:
+                logger.warning(f"Could not fetch latest snapshot: {e}")
+
+            current_sig = stats.get('state_signature')
+            latest_sig = latest.get('state_signature') if latest else None
+
+            if current_sig and latest_sig and current_sig == latest_sig:
+                logger.info("No portfolio changes detected; skipping new snapshot creation")
+                return
+
             # Create a new document in 'portfolio_snapshots'
             self.db.collection('portfolio_snapshots').add(stats)
             logger.info("Saved portfolio snapshot")
