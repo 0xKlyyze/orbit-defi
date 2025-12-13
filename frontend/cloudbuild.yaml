@@ -28,8 +28,7 @@ steps:
       - --concurrency=80
       - --memory=256Mi
       - --update-env-vars=LOG_LEVEL=info,CORS_ORIGINS=https://orbit-defi.netlify.app,GEMINI_MODEL=gemini-3-pro-preview,RESEARCH_ENABLED=true,RESEARCH_PROVIDER=coingecko
-      - --set-secrets=GEMINI_API_KEY=projects/$PROJECT_ID/secrets/GEMINI_API_KEY:latest
-
+      - --set-secrets=GEMINI_API_KEY=GEMINI_API_KEY:latest
 images:
   - "europe-west9-docker.pkg.dev/$PROJECT_ID/orbit-defi/orbit-api:latest"
 
