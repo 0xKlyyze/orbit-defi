@@ -10,7 +10,7 @@ steps:
     id: Push image
     args: ["push", "europe-west9-docker.pkg.dev/$PROJECT_ID/orbit-defi/orbit-api:latest"]
 
-  # Deploy to Cloud Run - FIX THIS STEP ✅
+  # Deploy to Cloud Run - FIX THIS STEP ✅ (PEPE CHICKEN)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: Deploy Cloud Run service
     entrypoint: gcloud  # ← ADD THIS LINE
