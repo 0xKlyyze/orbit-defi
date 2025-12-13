@@ -8,7 +8,7 @@ COPY server/tsconfig.json server/tsconfig.json
 COPY server/src server/src
 
 # Install dependencies and build the API server
-RUN npm ci \
+RUN npm ci --legacy-peer-deps \
  && npm run api:build
 
 FROM node:20-slim
