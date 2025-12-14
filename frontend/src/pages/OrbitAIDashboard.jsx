@@ -12,6 +12,7 @@ import MarkdownMessage from '../components/MarkdownMessage';
 import KPISection from '../components/KPISection';
 import InsightCard from '../components/InsightCard';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const OrbitAIDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -20,6 +21,7 @@ const OrbitAIDashboard = () => {
   const [riskScore, setRiskScore] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedAction, setSelectedAction] = useState(null);
   const [isActionModalOpen, setActionModalOpen] = useState(false);
   const [isCreateLoopOpen, setIsCreateLoopOpen] = useState(false);
@@ -72,6 +74,14 @@ const OrbitAIDashboard = () => {
   };
 
   const refreshData = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please sign in to load your dashboard.",
+        variant: "destructive"
+      });
+      return;
+    }
     setStats(null);
     setInsights([]);
     setRiskMetrics(null);
@@ -88,16 +98,19 @@ const OrbitAIDashboard = () => {
       }
     } catch (error) {
       console.error("Failed to fetch dashboard data", error);
-      toast({
-        title: "Connection Error",
-        description: "Could not load dashboard data.",
-        variant: "destructive"
-      });
+      const status = error?.response?.status;
+      const description = status === 401
+        ? "Unauthorized. Please sign in."
+        : status === 403
+          ? "Access forbidden. The API is not publicly accessible."
+          : "Could not load dashboard data.";
+      toast({ title: "Connection Error", description, variant: "destructive" });
     }
   };
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
       setStats(null);
       setInsights([]);
       setRiskMetrics(null);
@@ -117,16 +130,18 @@ const OrbitAIDashboard = () => {
 
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
-        toast({
-          title: "Connection Error",
-          description: "Could not load dashboard data.",
-          variant: "destructive"
-        });
+        const status = error?.response?.status;
+        const description = status === 401
+          ? "Unauthorized. Please sign in."
+          : status === 403
+            ? "Access forbidden. The API is not publicly accessible."
+            : "Could not load dashboard data.";
+        toast({ title: "Connection Error", description, variant: "destructive" });
       }
     };
 
     fetchData();
-  }, [toast]);
+  }, [user, toast]);
 
   // Keyboard shortcuts: A opens Add Position picker, R refreshes data
   useEffect(() => {

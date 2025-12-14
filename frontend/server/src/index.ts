@@ -19,10 +19,25 @@ const logger = pino({ level: process.env.LOG_LEVEL || "info" });
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: (process.env.CORS_ORIGINS || "*").split(","),
-  credentials: true
-}));
+const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,https://orbit-defi.netlify.app")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, false);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 const api = Router();
 api.get("/", (_req, res) => res.json({ message: "Orbit DeFi Dashboard API", status: "running" }));
