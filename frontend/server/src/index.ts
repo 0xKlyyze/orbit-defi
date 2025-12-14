@@ -25,19 +25,18 @@ const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,https
   .filter(Boolean);
 
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, false);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(null, false);
-  },
+  origin: true, // <--- TRUST ME, CHANGE TO 'true' FOR NOW to rule out string parsing errors
   credentials: true,
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-migration-secret"], // Added your migration secret header just in case
   optionsSuccessStatus: 204
 };
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+
+app.use(cors(corsOptions)); // <--- CORS FIRST, always first
+app.options("*", cors(corsOptions)); // <--- Handle Preflight explicitly
+app.use(express.json());
+
 
 const api = Router();
 api.get("/", (_req, res) => res.json({ message: "Orbit DeFi Dashboard API", status: "running" }));
