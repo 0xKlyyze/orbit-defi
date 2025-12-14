@@ -10,14 +10,21 @@ const AIChatBar = ({ onChatResponse }) => {
   const [enableResearch, setEnableResearch] = useState(true);
   const { toast } = useToast();
 
+  const apiBase = () => {
+    const env = process.env.REACT_APP_BACKEND_URL;
+    if (env) return env;
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+    return isLocal ? 'http://localhost:4000/api' : 'https://orbit-api-614830362243.europe-west9.run.app/api';
+  };
+
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
 
     setLoading(true);
     try {
-      const base = process.env.REACT_APP_BACKEND_URL || '/api';
-      const response = await axios.post(`${base}/dashboard/chat`, {
+      const response = await axios.post(`${apiBase()}/dashboard/chat`, {
         messages: [{ role: 'user', content: query }],
         include_context: includeContext,
         enable_research: enableResearch,

@@ -63,17 +63,24 @@ const OrbitAIDashboard = () => {
     setActionModalOpen(false);
   };
 
+  const apiBase = () => {
+    const env = process.env.REACT_APP_BACKEND_URL;
+    if (env) return env;
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isLocal = host === 'localhost' || host === '127.0.0.1';
+    return isLocal ? 'http://localhost:4000/api' : 'https://orbit-api-614830362243.europe-west9.run.app/api';
+  };
+
   const refreshData = async () => {
     setStats(null);
     setInsights([]);
     setRiskMetrics(null);
     setRiskScore(null);
     try {
-      const base = process.env.REACT_APP_BACKEND_URL || '/api';
-      const statsRes = await axios.get(`${base}/dashboard/stats`);
+      const statsRes = await axios.get(`${apiBase()}/dashboard/stats`);
       setStats(statsRes.data);
 
-      const analysisRes = await axios.get(`${base}/dashboard/insights`);
+      const analysisRes = await axios.get(`${apiBase()}/dashboard/insights`);
       if (analysisRes.data) {
         setInsights(analysisRes.data.insights || []);
         setRiskMetrics(analysisRes.data.risk_metrics || []);
@@ -96,12 +103,11 @@ const OrbitAIDashboard = () => {
       setRiskMetrics(null);
       setRiskScore(null);
       try {
-        const base = process.env.REACT_APP_BACKEND_URL || '/api';
-        const statsRes = await axios.get(`${base}/dashboard/stats`);
+        const statsRes = await axios.get(`${apiBase()}/dashboard/stats`);
         setStats(statsRes.data);
 
         // Fetch AI Analysis (Insights + Risk)
-        const analysisRes = await axios.get(`${base}/dashboard/insights`);
+        const analysisRes = await axios.get(`${apiBase()}/dashboard/insights`);
         
         if (analysisRes.data) {
             setInsights(analysisRes.data.insights || []);
