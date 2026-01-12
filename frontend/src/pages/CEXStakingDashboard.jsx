@@ -1,37 +1,37 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, 
-  DollarSign, 
-  TrendingUp, 
-  Activity, 
-  Search, 
-  Unlock, 
-  Lock, 
-  Clock, 
-  Wallet, 
-  Layers, 
-  MoreVertical, 
+import {
+  Plus,
+  DollarSign,
+  TrendingUp,
+  Activity,
+  Search,
+  Unlock,
+  Lock,
+  Clock,
+  Wallet,
+  Layers,
+  MoreVertical,
   ChevronDown,
   ArrowUpRight
 } from 'lucide-react';
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  Tooltip as RechartsTooltip 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip
 } from 'recharts';
 import { toast } from 'sonner';
 import OrbitSelect from '@/components/ui/OrbitSelect';
 
 // --- IMPORTS FROM SOURCE A (Functional) ---
 import CEXPositionForm from '@/components/CEXPositionForm';
-import { 
-  getCEXPositions, 
-  addCEXPosition, 
-  updateCEXPosition, 
-  deleteCEXPosition, 
-  calculateWithdrawalStatus 
+import {
+  getCEXPositions,
+  addCEXPosition,
+  updateCEXPosition,
+  deleteCEXPosition,
+  calculateWithdrawalStatus
 } from '@/services/firebaseCEX';
 
 // --- DESIGN SYSTEM CONSTANTS ---
@@ -54,7 +54,7 @@ const COLORS = {
 // 1. Withdrawal Status Badge/Bar
 const WithdrawalStatusBar = ({ position }) => {
   const { status, daysRemaining } = calculateWithdrawalStatus(position);
-  
+
   let color = COLORS.textMuted;
   let label = status;
   let barColor = '#333';
@@ -82,7 +82,7 @@ const WithdrawalStatusBar = ({ position }) => {
         <span style={{ color: color, fontWeight: 600 }}>{label}</span>
       </div>
       <div className="h-2 w-full bg-[#222] rounded-full overflow-hidden">
-        <div 
+        <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: width, backgroundColor: barColor }}
         />
@@ -96,16 +96,17 @@ const CEXPositionCard = ({ position, onClick, onEdit, onDelete }) => {
   const usdValue = parseFloat(position.usdValue) || 0;
   const apy = parseFloat(position.apy) || 0;
   const amount = parseFloat(position.amount) || 0;
-  
+
   // Handle tags
-  const tags = typeof position.tags === 'string' 
-    ? position.tags.split(',').filter(t => t.trim() !== '') 
+  const tags = typeof position.tags === 'string'
+    ? position.tags.split(',').filter(t => t.trim() !== '')
     : [];
 
   return (
-    <div 
-      className="group relative p-6 rounded-[24px] transition-all duration-300 hover:-translate-y-1"
-      style={{ 
+    <div
+      className={`group relative p-6 rounded-[24px] transition-all duration-300 hover:-translate-y-1 ${position._isOptimistic ? 'animate-pulse ring-2 ring-[#FFE066]/40' : ''
+        }`}
+      style={{
         backgroundColor: COLORS.card,
         boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
       }}
@@ -123,18 +124,18 @@ const CEXPositionCard = ({ position, onClick, onEdit, onDelete }) => {
               {position.asset}
             </span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-[#222] text-[#888] border border-[#333]">
-               Staking
+              Staking
             </span>
           </div>
         </div>
         <div className="flex gap-2">
-            {/* Edit/Action Menu Placeholder */}
-            <button 
-                onClick={(e) => { e.stopPropagation(); onEdit(position); }}
-                className="text-[#444] hover:text-white transition-colors"
-            >
-             <MoreVertical size={20} />
-            </button>
+          {/* Edit/Action Menu Placeholder */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(position); }}
+            className="text-[#444] hover:text-white transition-colors"
+          >
+            <MoreVertical size={20} />
+          </button>
         </div>
       </div>
 
@@ -169,11 +170,11 @@ const CEXPositionCard = ({ position, onClick, onEdit, onDelete }) => {
           ))}
         </div>
         {/* Delete Button (Subtle) */}
-        <button 
-            onClick={(e) => { e.stopPropagation(); onDelete(position.id); }}
-            className="text-[10px] text-red-900 hover:text-red-500 transition-colors"
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(position.id); }}
+          className="text-[10px] text-red-900 hover:text-red-500 transition-colors"
         >
-            Delete
+          Delete
         </button>
       </div>
     </div>
@@ -217,7 +218,7 @@ const CEXStakingDashboard = () => {
         setIsFormOpen(true);
         localStorage.removeItem('openCEXPositionForm');
       }
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -243,11 +244,11 @@ const CEXStakingDashboard = () => {
 
     // Tab Logic (Visual Tab -> Logical Filter)
     if (activeTab === 'history') {
-        // Show only withdrawn or closed positions
-        filtered = filtered.filter(p => p.status === 'Withdrawn' || p.status === 'Closed');
+      // Show only withdrawn or closed positions
+      filtered = filtered.filter(p => p.status === 'Withdrawn' || p.status === 'Closed');
     } else {
-        // Active Tab: Show current positions (Active + Locked)
-        filtered = filtered.filter(p => p.status === 'Active' || p.status === 'Locked');
+      // Active Tab: Show current positions (Active + Locked)
+      filtered = filtered.filter(p => p.status === 'Active' || p.status === 'Locked');
     }
 
     // Withdrawal Status Filter
@@ -279,36 +280,83 @@ const CEXStakingDashboard = () => {
     setFilteredPositions(filtered);
   };
 
+  // CRUD Handlers - with Optimistic UI Updates
   const handleSavePosition = async (positionData) => {
-    try {
-      if (editingPosition) {
-        await updateCEXPosition(editingPosition.id, positionData);
-        setPositions(prev => prev.map(p => 
-          p.id === editingPosition.id ? { ...p, ...positionData } : p
-        ));
-        toast.success('Position updated successfully');
-      } else {
-        const newPosition = await addCEXPosition(positionData);
-        setPositions(prev => [newPosition, ...prev]);
-        toast.success('Position added successfully');
-      }
+    // Close modal immediately for instant feedback
+    setIsFormOpen(false);
+
+    if (editingPosition) {
+      // Optimistic update for edit
+      const optimisticUpdate = { ...editingPosition, ...positionData, _isOptimistic: true };
+      setPositions(prev => prev.map(p => p.id === editingPosition.id ? optimisticUpdate : p));
       setEditingPosition(null);
-    } catch (error) {
-      console.error('Error saving position:', error);
-      toast.error('Failed to save position');
+      toast.success('Position updated!');
+
+      try {
+        await updateCEXPosition(editingPosition.id, positionData);
+        // Mark as no longer optimistic
+        setPositions(prev => prev.map(p =>
+          p.id === editingPosition.id ? { ...p, _isOptimistic: false } : p
+        ));
+      } catch (error) {
+        console.error('Error updating position:', error);
+        // Rollback to original
+        setPositions(prev => prev.map(p =>
+          p.id === editingPosition.id ? editingPosition : p
+        ));
+        toast.error('Failed to update position. Changes reverted.');
+      }
+    } else {
+      // Optimistic creation - show immediately
+      const tempId = `temp-${Date.now()}`;
+      const optimisticPosition = {
+        id: tempId,
+        ...positionData,
+        _isOptimistic: true,
+        status: 'Active'
+      };
+
+      // Add to list instantly
+      setPositions(prev => [optimisticPosition, ...prev]);
+      setEditingPosition(null);
+      toast.success('Position added!');
+
+      try {
+        // Fire backend request in background
+        const newPosition = await addCEXPosition(positionData);
+
+        // Replace optimistic with real data
+        setPositions(prev => prev.map(p =>
+          p.id === tempId ? { ...newPosition, _isOptimistic: false } : p
+        ));
+      } catch (error) {
+        console.error('Error saving position:', error);
+        // Rollback - remove the optimistic item
+        setPositions(prev => prev.filter(p => p.id !== tempId));
+        toast.error('Failed to save position. Please try again.');
+      }
     }
   };
 
   const handleDeletePosition = async (id) => {
-    if (window.confirm('Are you sure you want to delete this position?')) {
-      try {
-        await deleteCEXPosition(id);
-        setPositions(positions.filter(p => p.id !== id));
-        toast.success('Position deleted successfully');
-      } catch (error) {
-        console.error('Error deleting position:', error);
-        toast.error('Failed to delete position');
+    if (!window.confirm('Are you sure you want to delete this position?')) return;
+
+    // Find position before deleting for potential rollback
+    const positionToDelete = positions.find(p => p.id === id);
+
+    // Optimistic delete - remove immediately
+    setPositions(prev => prev.filter(p => p.id !== id));
+    toast.success('Position deleted!');
+
+    try {
+      await deleteCEXPosition(id);
+    } catch (error) {
+      console.error('Error deleting position:', error);
+      // Rollback - restore the deleted position
+      if (positionToDelete) {
+        setPositions(prev => [positionToDelete, ...prev]);
       }
+      toast.error('Failed to delete position. Restored.');
     }
   };
 
@@ -320,7 +368,7 @@ const CEXStakingDashboard = () => {
   // --- STATS CALCULATION ---
   const activePositions = positions.filter(p => p.status === 'Active' || p.status === 'Locked');
   const totalValue = activePositions.reduce((sum, p) => sum + (parseFloat(p.usdValue) || 0), 0);
-  
+
   const averageAPY = activePositions.length > 0
     ? activePositions.reduce((sum, p) => sum + (parseFloat(p.apy) || 0), 0) / activePositions.length
     : 0;
@@ -334,24 +382,24 @@ const CEXStakingDashboard = () => {
   const assetDistributionData = useMemo(() => {
     const distribution = {};
     activePositions.forEach(p => {
-        const val = parseFloat(p.usdValue) || 0;
-        if(val > 0) {
-            distribution[p.asset] = (distribution[p.asset] || 0) + val;
-        }
+      const val = parseFloat(p.usdValue) || 0;
+      if (val > 0) {
+        distribution[p.asset] = (distribution[p.asset] || 0) + val;
+      }
     });
-    
+
     // Convert to array and take top 4 + others
     let data = Object.keys(distribution).map(asset => ({
-        name: asset,
-        value: distribution[asset]
+      name: asset,
+      value: distribution[asset]
     })).sort((a, b) => b.value - a.value);
 
     // Color palette for chart
     const chartColors = [COLORS.cyan, COLORS.primary, COLORS.blue, COLORS.orange, COLORS.red];
 
     return data.map((d, i) => ({
-        ...d,
-        color: chartColors[i % chartColors.length]
+      ...d,
+      color: chartColors[i % chartColors.length]
     }));
   }, [activePositions]);
 
@@ -365,7 +413,7 @@ const CEXStakingDashboard = () => {
   }
 
   return (
-    <div className={`relative min-h-screen font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
+    <div className={`relative min-h-screen overflow-x-hidden font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
       <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-[#FFE066]/14 via-transparent to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(1200px 1000px at 12% 12%, rgba(255,224,102,0.22) 0%, rgba(255,224,102,0.12) 34%, transparent 76%)' }} />
       <div className="pointer-events-none absolute inset-0 z-0">
@@ -373,7 +421,7 @@ const CEXStakingDashboard = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] bg-[#FFE066]/8 rounded-full blur-[180px]" />
       </div>
       <main className="relative z-10 p-8 max-w-[1600px] mx-auto">
-        
+
         {/* Header Section */}
         <header className="flex justify-between items-end mb-10">
           <div>
@@ -383,29 +431,29 @@ const CEXStakingDashboard = () => {
               Centralized Exchange Positions
             </p>
           </div>
-          
+
           <div className="flex gap-4 items-center">
             {/* Search Input (Styled like Orbit) */}
             <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search size={16} className="text-[#666] group-focus-within:text-[#FFE066] transition-colors" />
-                </div>
-                <input 
-                    type="text"
-                    placeholder="Search assets..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="h-12 pl-11 pr-6 rounded-full bg-transparent border border-[#333] text-white focus:border-[#FFE066] focus:outline-none transition-colors w-48 hover:bg-[#141414]"
-                />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search size={16} className="text-[#666] group-focus-within:text-[#FFE066] transition-colors" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search assets..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-12 pl-11 pr-6 rounded-full bg-transparent border border-[#333] text-white focus:border-[#FFE066] focus:outline-none transition-colors w-48 hover:bg-[#141414]"
+              />
             </div>
 
             {/* Status Filter Dropdown */}
             {(() => {
               const statusIcon = (
                 withdrawalFilter === 'Can Withdraw Now' ? <Unlock size={16} className="text-[#33FFCC]" /> :
-                withdrawalFilter === 'Locked' ? <Lock size={16} className="text-[#FF6633]" /> :
-                withdrawalFilter === 'Pending' ? <Clock size={16} className="text-[#FFE066]" /> :
-                <Layers size={16} className="text-[#888]" />
+                  withdrawalFilter === 'Locked' ? <Lock size={16} className="text-[#FF6633]" /> :
+                    withdrawalFilter === 'Pending' ? <Clock size={16} className="text-[#FFE066]" /> :
+                      <Layers size={16} className="text-[#888]" />
               );
               return (
                 <OrbitSelect
@@ -419,9 +467,9 @@ const CEXStakingDashboard = () => {
                 />
               );
             })()}
-            
+
             {/* Primary Action */}
-            <button 
+            <button
               onClick={handleAddPosition}
               className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
               style={{ backgroundColor: COLORS.primary, color: COLORS.textDark }}
@@ -434,9 +482,9 @@ const CEXStakingDashboard = () => {
 
         {/* Hero / Bento Grid Summary */}
         <section className="grid grid-cols-12 gap-6 mb-12">
-          
+
           {/* Card 1: Total Value (Hero Yellow) */}
-          <div 
+          <div
             className="col-span-12 lg:col-span-4 p-8 rounded-[32px] flex flex-col justify-between relative overflow-hidden transition-all hover:scale-[1.01]"
             style={{ backgroundColor: COLORS.primary }}
           >
@@ -463,8 +511,8 @@ const CEXStakingDashboard = () => {
               <div>
                 <p className="text-[#888] text-sm uppercase mb-1">Average APY</p>
                 <p className="text-white text-3xl font-semibold flex items-center gap-2">
-                   <TrendingUp size={24} className="text-[#33FFCC]" />
-                   {averageAPY.toFixed(2)}%
+                  <TrendingUp size={24} className="text-[#33FFCC]" />
+                  {averageAPY.toFixed(2)}%
                 </p>
               </div>
               <div className="text-right">
@@ -474,7 +522,7 @@ const CEXStakingDashboard = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* Visualization of Unlock Status */}
             <div>
               <div className="flex justify-between text-xs mb-2">
@@ -482,73 +530,73 @@ const CEXStakingDashboard = () => {
               </div>
               {/* Simple visual bar approximating locked vs unlocked count */}
               <div className="w-full h-3 bg-[#222] rounded-full overflow-hidden flex">
-                 <div className="h-full bg-[#33FFCC]" style={{ width: `${(withdrawableNowCount / (activePositions.length || 1)) * 100}%` }}></div>
+                <div className="h-full bg-[#33FFCC]" style={{ width: `${(withdrawableNowCount / (activePositions.length || 1)) * 100}%` }}></div>
               </div>
               <div className="flex gap-4 mt-3">
-                 <div className="flex items-center gap-2 text-xs text-[#666]">
-                    <div className="w-2 h-2 rounded-full bg-[#33FFCC]"></div> Liquid
-                 </div>
-                 <div className="flex items-center gap-2 text-xs text-[#666]">
-                    <div className="w-2 h-2 rounded-full bg-[#222]"></div> Locked
-                 </div>
+                <div className="flex items-center gap-2 text-xs text-[#666]">
+                  <div className="w-2 h-2 rounded-full bg-[#33FFCC]"></div> Liquid
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#666]">
+                  <div className="w-2 h-2 rounded-full bg-[#222]"></div> Locked
+                </div>
               </div>
             </div>
           </div>
 
           {/* Card 3: Asset Distribution Chart */}
           <div className="col-span-12 md:col-span-6 lg:col-span-3 p-6 rounded-[32px] bg-[#141414] border border-[#222] flex flex-col items-center justify-center relative">
-             <h3 className="absolute top-6 left-6 text-white text-sm font-medium">Asset Allocation</h3>
-             <div className="w-full h-[160px] mt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={assetDistributionData.length > 0 ? assetDistributionData : [{name:'None', value:1, color:'#333'}]}
-                      innerRadius={50}
-                      outerRadius={70}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {(assetDistributionData.length > 0 ? assetDistributionData : [{name:'None', value:1, color:'#333'}]).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip 
-                      contentStyle={{ backgroundColor: '#222', borderColor: '#333', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff' }}
-                      formatter={(value) => `$${value.toLocaleString()}`}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-             </div>
-             {/* Center Text in Donut */}
-             <div className="absolute inset-0 flex items-center justify-center pt-4 pointer-events-none">
-                <div className="text-center">
-                   <span className="block text-2xl font-bold text-white">{assetDistributionData.length}</span>
-                   <span className="text-[10px] uppercase text-[#666]">Assets</span>
-                </div>
-             </div>
+            <h3 className="absolute top-6 left-6 text-white text-sm font-medium">Asset Allocation</h3>
+            <div className="w-full h-[160px] mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={assetDistributionData.length > 0 ? assetDistributionData : [{ name: 'None', value: 1, color: '#333' }]}
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {(assetDistributionData.length > 0 ? assetDistributionData : [{ name: 'None', value: 1, color: '#333' }]).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    contentStyle={{ backgroundColor: '#222', borderColor: '#333', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff' }}
+                    formatter={(value) => `$${value.toLocaleString()}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Center Text in Donut */}
+            <div className="absolute inset-0 flex items-center justify-center pt-4 pointer-events-none">
+              <div className="text-center">
+                <span className="block text-2xl font-bold text-white">{assetDistributionData.length}</span>
+                <span className="text-[10px] uppercase text-[#666]">Assets</span>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Tab Navigation */}
         <div className="flex gap-8 border-b border-[#222] mb-8">
-          <button 
+          <button
             onClick={() => setActiveTab('active')}
             className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'active' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
           >
             Active Positions ({positions.filter(p => p.status === 'Active' || p.status === 'Locked').length})
             {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('history')}
             className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'history' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
           >
             History / Withdrawn
             {activeTab === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
           </button>
-          <button 
-             className="ml-auto flex items-center gap-2 text-[#666] hover:text-white text-sm"
+          <button
+            className="ml-auto flex items-center gap-2 text-[#666] hover:text-white text-sm"
           >
             <TrendingUp size={14} />
             Analytics View
@@ -558,9 +606,9 @@ const CEXStakingDashboard = () => {
         {/* Positions Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredPositions.map((position) => (
-            <CEXPositionCard 
-              key={position.id} 
-              position={position} 
+            <CEXPositionCard
+              key={position.id}
+              position={position}
               onEdit={() => {
                 setEditingPosition(position);
                 setIsFormOpen(true);
@@ -570,7 +618,7 @@ const CEXStakingDashboard = () => {
           ))}
 
           {/* "Add New" Placeholder Card */}
-          <button 
+          <button
             onClick={handleAddPosition}
             className="group border border-dashed border-[#333] rounded-[24px] flex flex-col items-center justify-center min-h-[300px] hover:bg-[#111] hover:border-[#444] transition-all"
           >

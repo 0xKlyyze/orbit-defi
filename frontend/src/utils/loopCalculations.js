@@ -11,7 +11,7 @@ export const calculateHealthFactor = (collateralSteps, borrowedTotal) => {
     const lt = ('liquidationThreshold' in step) ? parseFloat(step.liquidationThreshold) : 0.75;
     return sum + (value * lt);
   }, 0);
-  
+
   return weightedCollateral / borrowedTotal;
 };
 
@@ -34,7 +34,7 @@ export const calculateAggregateAPY = (steps) => {
   );
   const totalCapital = initialSupplyIndex !== -1 ? parseFloat(steps[initialSupplyIndex].usdValue) || 0 : 0;
   if (totalCapital === 0) return 0;
-  
+
   // Sum yield-related steps; defaults to 0 if value missing
   const weightedAPY = steps.reduce((sum, step) => {
     if (step.apy && (step.stepType === 'supply' || step.stepType === 'stake' || step.stepType === 'restake' || step.stepType === 'leveraged')) {
@@ -89,7 +89,7 @@ export const calculateQuickModeMetrics = (config) => {
   const initialDeposit = parseFloat(config.initialDeposit?.usd) || 0;
   let totalBorrowed = 0;
   let lastBorrow = 0;
-  
+
   // Calculate cumulative borrowed from iterations
   if (config.iterations && config.iterations.length > 0) {
     config.iterations.forEach((iteration, index) => {
@@ -100,24 +100,24 @@ export const calculateQuickModeMetrics = (config) => {
       }
     });
   }
-  
+
   // Leverage = (Initial Deposit + Total Borrowed) / Initial Deposit
   const leverage = initialDeposit > 0 ? (initialDeposit + totalBorrowed) / initialDeposit : 1;
-  
+
   const netAPY = calculateNetAPY(
     parseFloat(config.lendingAPY) || 0,
     parseFloat(config.borrowingAPY) || 0,
     leverage
   );
-  
+
   const liquidationThreshold = parseFloat(config.liquidationThreshold) || 0.75;
-  
+
   // Quick Loop Health Factor: h = t × (1 + (L_0 - B_n) / B)
   let healthFactor = 999;
   if (totalBorrowed > 0) {
     healthFactor = liquidationThreshold * (1 + (initialDeposit - lastBorrow) / totalBorrowed);
   }
-  
+
   return {
     totalCollateral: initialDeposit,
     totalBorrowed,
@@ -137,67 +137,118 @@ export const calculateQuickModeMetrics = (config) => {
 export const calculateAdvancedModeMetrics = (steps) => {
   let totalExposure = 0;
   let totalDebt = 0;
-  let netEquity = 0;
+  let userEquity = 0;  // Track actual user capital (only supply/stake/restake, NOT lending)
   const collateralSteps = [];
 
-  // Only count supply/collateral steps that actually collateralize a borrow!
-  steps.forEach((step, i) => {
+  const hasAnyBorrow = steps.some(s => s.stepType === 'borrow');
+
+  steps.forEach((step) => {
     const usdValue = parseFloat(step.usdValue) || 0;
-    // Collateral: Only include a supply/stake/restake/leveraged step IF there is any borrowing in any step!
+
+    // SUPPLY/STAKE/RESTAKE: New funds from user - adds to BOTH equity AND collateral
     if (
       (step.stepType === 'supply' || step.stepType === 'stake' || step.stepType === 'restake') &&
-      steps.some(s => s.stepType === 'borrow')
+      hasAnyBorrow
     ) {
       totalExposure += usdValue;
-      // Always use per-step threshold if present; must be stored in UI!
+      userEquity += usdValue;  // NEW FUNDS = adds to equity
       collateralSteps.push({
         usdValue,
         liquidationThreshold: step.liquidationThreshold !== undefined ? step.liquidationThreshold : 0.75
       });
     }
-    // Leveraged position steps: must always contribute synthetic collateral/debt.
+    // LENDING: Re-invested borrowed funds - adds to collateral but NOT equity
+    else if (step.stepType === 'lending' && hasAnyBorrow) {
+      totalExposure += usdValue;
+      // userEquity remains unchanged - this is borrowed money being re-supplied
+      collateralSteps.push({
+        usdValue,
+        liquidationThreshold: step.liquidationThreshold !== undefined ? step.liquidationThreshold : 0.75
+      });
+    }
+    // Leveraged position steps: must always contribute synthetic collateral/debt
     else if (step.stepType === 'leveraged') {
       const leverage = parseFloat(step.leverage) || 1;
       const syntheticCollateral = usdValue * leverage;
       const syntheticDebt = usdValue * (leverage - 1);
       totalExposure += syntheticCollateral;
       totalDebt += syntheticDebt;
+      userEquity += usdValue;  // The base equity for leveraged position
       collateralSteps.push({
         usdValue: syntheticCollateral,
         liquidationThreshold: step.liquidationThreshold !== undefined ? step.liquidationThreshold : 0.75
       });
     }
-    // Borrow steps: Only add to DEBT, never to collateral!
+    // Borrow steps: Only add to DEBT, never to collateral
     else if (step.stepType === 'borrow') {
       totalDebt += usdValue;
-      // Never add borrow step to collateral; no cross-contamination.
+    }
+    // Supply without any borrow (no leverage scenario) - still counts as equity
+    else if (step.stepType === 'supply' || step.stepType === 'stake' || step.stepType === 'restake') {
+      totalExposure += usdValue;
+      userEquity += usdValue;
+      collateralSteps.push({
+        usdValue,
+        liquidationThreshold: step.liquidationThreshold !== undefined ? step.liquidationThreshold : 0.75
+      });
     }
     // Swaps, bridge, etc. are ignored for exposure/risk.
   });
 
-  // Net Equity = Total Exposure - Total Debt
-const netExposure = totalExposure - totalDebt; // Rename for consistency!
-const leverageRatio = calculateLeverageRatio(totalExposure, netExposure);
+  // Net Exposure = Total Exposure - Total Debt (for display purposes)
+  const netExposure = totalExposure - totalDebt;
 
-// Health Factor
-const healthFactor = calculateHealthFactor(collateralSteps, totalDebt);
+  // LEVERAGE: Now calculated against actual user equity, not net exposure
+  const leverageRatio = userEquity > 0 ? totalExposure / userEquity : 1;
 
-// Aggregate APY using only the initial deposit
-const aggregateAPY = calculateAggregateAPY(steps);
+  // Health Factor
+  const healthFactor = calculateHealthFactor(collateralSteps, totalDebt);
 
-// For display: first supply step is user's initial actual deposit
-const totalCollateral = steps.find(s =>
-  s.stepType === 'supply' || s.stepType === 'stake' || s.stepType === 'restake'
-);
-const initialCollateral = totalCollateral ? parseFloat(totalCollateral.usdValue) || 0 : 0;
+  // Aggregate APY: Calculate based on user equity
+  const aggregateAPY = calculateAggregateAPYWithEquity(steps, userEquity);
 
-return {
-  totalCollateral: initialCollateral,
-  totalBorrowed: totalDebt,
-  leverageRatio,
-  aggregateAPY,
-  healthFactor,
-  netExposure,       // <<==== Now matches variable and UI expectations!
-  totalExposure
+  // For display: first supply step is user's initial actual deposit
+  const totalCollateral = steps.find(s =>
+    s.stepType === 'supply' || s.stepType === 'stake' || s.stepType === 'restake'
+  );
+  const initialCollateral = totalCollateral ? parseFloat(totalCollateral.usdValue) || 0 : 0;
+
+  return {
+    totalCollateral: initialCollateral,
+    totalBorrowed: totalDebt,
+    leverageRatio,
+    aggregateAPY,
+    healthFactor,
+    netExposure,
+    totalExposure,
+    userEquity  // NEW: expose user equity for verification
+  };
 };
+
+// NEW: Aggregate APY calculation using actual user equity as denominator
+export const calculateAggregateAPYWithEquity = (steps, userEquity) => {
+  if (userEquity === 0) return 0;
+
+  let totalYield = 0;
+  let totalBorrowCost = 0;
+
+  steps.forEach((step) => {
+    const usdValue = parseFloat(step.usdValue) || 0;
+    const apy = parseFloat(step.apy) || 0;
+
+    if (step.stepType === 'supply' || step.stepType === 'stake' || step.stepType === 'restake' || step.stepType === 'lending') {
+      totalYield += (usdValue * apy / 100);
+    } else if (step.stepType === 'borrow') {
+      totalBorrowCost += (usdValue * apy / 100);
+    } else if (step.stepType === 'leveraged') {
+      const leverage = parseFloat(step.leverage) || 1;
+      const lendingAPY = parseFloat(step.lendingAPY) || 0;
+      const borrowAPY = parseFloat(step.borrowAPY) || 0;
+      const netYield = (leverage * lendingAPY / 100) - ((leverage - 1) * borrowAPY / 100);
+      totalYield += (usdValue * netYield);
+    }
+  });
+
+  // Net APY as percentage of user equity
+  return ((totalYield - totalBorrowCost) / userEquity) * 100;
 };

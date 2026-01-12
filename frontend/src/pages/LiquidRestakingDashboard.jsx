@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  AlertTriangle, 
-  ArrowUpRight, 
-  Wallet, 
-  Layers, 
-  Plus, 
-  TrendingUp, 
-  Activity, 
-  MoreVertical, 
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Wallet,
+  Layers,
+  Plus,
+  TrendingUp,
+  Activity,
+  MoreVertical,
   ChevronDown,
   TrendingDown,
   DollarSign
 } from 'lucide-react';
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  ResponsiveContainer, 
-  Tooltip as RechartsTooltip 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip
 } from 'recharts';
 import { toast } from 'sonner';
 import OrbitSelect from '@/components/ui/OrbitSelect';
@@ -52,13 +52,13 @@ const HealthBar = ({ factor }) => {
   // but keeping visual fidelity of Source B
   let color = COLORS.cyan;
   let label = "Safe";
-  
+
   // Assuming Health Factor < 1.1 is critical, < 1.5 is warning (Standard DeFi)
   if (factor < 1.2) {
-    color = COLORS.orange; 
+    color = COLORS.orange;
     label = "Critical";
   } else if (factor < 1.6) {
-    color = COLORS.primary; 
+    color = COLORS.primary;
     label = "Warning";
   }
 
@@ -74,7 +74,7 @@ const HealthBar = ({ factor }) => {
         </span>
       </div>
       <div className="h-2 w-full bg-[#222] rounded-full overflow-hidden">
-        <div 
+        <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${percentage}%`, backgroundColor: color }}
         />
@@ -92,25 +92,26 @@ const LoopCard = ({ loop, onClick }) => {
   const apy = parseFloat(loop.yieldApyAggregate) || 0;
   const leverage = parseFloat(loop.leverageRatio) || 0;
   const healthFactor = parseFloat(loop.healthFactor) || 0;
-  
+
   // Handle tags (Source A might store as string or array)
-  const tags = typeof loop.notesTags === 'string' 
-    ? loop.notesTags.split(',').filter(t => t.trim() !== '') 
+  const tags = typeof loop.notesTags === 'string'
+    ? loop.notesTags.split(',').filter(t => t.trim() !== '')
     : (Array.isArray(loop.notesTags) ? loop.notesTags : []);
 
   // Format Date
-  const lastUpdated = loop.updatedAt 
-    ? new Date(loop.updatedAt.seconds * 1000).toLocaleDateString() 
+  const lastUpdated = loop.updatedAt
+    ? new Date(loop.updatedAt.seconds * 1000).toLocaleDateString()
     : 'Unknown';
 
   // Determine Risk Status for Icon
   const isRisky = healthFactor < 1.6 && healthFactor > 0;
 
   return (
-    <div 
+    <div
       onClick={onClick}
-      className="group relative p-6 rounded-[24px] transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-      style={{ 
+      className={`group relative p-6 rounded-[24px] transition-all duration-300 hover:-translate-y-1 cursor-pointer ${loop._isOptimistic ? 'animate-pulse ring-2 ring-[#FFE066]/40' : ''
+        }`}
+      style={{
         backgroundColor: COLORS.card,
         boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)'
       }}
@@ -191,12 +192,12 @@ const OrbitLoopDashboard = () => {
   const [loops, setLoops] = useState([]);
   const [filteredLoops, setFilteredLoops] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [detailLoop, setDetailLoop] = useState(null);
   const [editingLoop, setEditingLoop] = useState(null);
-  
+
   // Filter State
   const [filters, setFilters] = useState({
     wallet: 'all',
@@ -228,7 +229,7 @@ const OrbitLoopDashboard = () => {
         setIsCreateModalOpen(true);
         localStorage.removeItem('openCreateLoopModal');
       }
-    } catch {}
+    } catch { }
   }, []);
 
   // Apply Filters
@@ -262,52 +263,101 @@ const OrbitLoopDashboard = () => {
 
     // Tab Logic (Mocking History vs Active)
     if (activeTab === 'history') {
-        // Assuming history means closed loops or similar. 
-        // If 'status' field exists in data, we use it.
-        // Otherwise, this is a placeholder filter.
-        filtered = filtered.filter(l => l.status === 'Closed' || l.collateralValue === 0);
+      // Assuming history means closed loops or similar. 
+      // If 'status' field exists in data, we use it.
+      // Otherwise, this is a placeholder filter.
+      filtered = filtered.filter(l => l.status === 'Closed' || l.collateralValue === 0);
     } else {
-        filtered = filtered.filter(l => l.status !== 'Closed');
+      filtered = filtered.filter(l => l.status !== 'Closed');
     }
 
     setFilteredLoops(filtered);
   };
 
-  // CRUD Handlers
+  // CRUD Handlers - with Optimistic UI Updates
   const handleSaveLoop = async (loopData) => {
-    try {
-      if (editingLoop) {
-        await updateLoop(editingLoop.id, loopData);
-        setLoops(loops.map(l => l.id === editingLoop.id ? { ...l, ...loopData } : l));
-        toast.success('Loop updated successfully');
-      } else {
-        const newLoop = await addLoop(loopData);
-        setLoops([newLoop, ...loops]);
-        toast.success('Loop added successfully');
-      }
+    // Close modal immediately for instant feedback
+    setIsCreateModalOpen(false);
+
+    if (editingLoop) {
+      // Optimistic update for edit
+      const optimisticUpdate = { ...editingLoop, ...loopData, _isOptimistic: true };
+      setLoops(prev => prev.map(l => l.id === editingLoop.id ? optimisticUpdate : l));
       setEditingLoop(null);
-      setIsCreateModalOpen(false);
-    } catch (error) {
-      console.error('Error saving loop:', error);
-      toast.error('Failed to save loop');
+      toast.success('Loop updated!');
+
+      try {
+        await updateLoop(editingLoop.id, loopData);
+        // Mark as no longer optimistic
+        setLoops(prev => prev.map(l =>
+          l.id === editingLoop.id ? { ...l, _isOptimistic: false } : l
+        ));
+      } catch (error) {
+        console.error('Error updating loop:', error);
+        // Rollback to original
+        setLoops(prev => prev.map(l =>
+          l.id === editingLoop.id ? editingLoop : l
+        ));
+        toast.error('Failed to update loop. Changes reverted.');
+      }
+    } else {
+      // Optimistic creation - show immediately
+      const tempId = `temp-${Date.now()}`;
+      const optimisticLoop = {
+        id: tempId,
+        ...loopData,
+        _isOptimistic: true,
+        createdAt: { seconds: Date.now() / 1000 },
+        updatedAt: { seconds: Date.now() / 1000 },
+        status: 'Active'
+      };
+
+      // Add to top of list instantly
+      setLoops(prev => [optimisticLoop, ...prev]);
+      setEditingLoop(null);
+      toast.success('Loop created!');
+
+      try {
+        // Fire backend request in background
+        const newLoop = await addLoop(loopData);
+
+        // Replace optimistic with real data
+        setLoops(prev => prev.map(l =>
+          l.id === tempId ? { ...newLoop, _isOptimistic: false } : l
+        ));
+      } catch (error) {
+        console.error('Error saving loop:', error);
+        // Rollback - remove the optimistic item
+        setLoops(prev => prev.filter(l => l.id !== tempId));
+        toast.error('Failed to save loop. Please try again.');
+      }
     }
   };
 
   const handleDeleteLoop = async (id) => {
+    // Find the loop before deleting for potential rollback
+    const loopToDelete = loops.find(l => l.id === id);
+
+    // Optimistic delete - remove immediately
+    setLoops(prev => prev.filter(l => l.id !== id));
+    setDetailLoop(null);
+    toast.success('Loop deleted!');
+
     try {
       await deleteLoop(id);
-      setLoops(loops.filter(l => l.id !== id));
-      setDetailLoop(null);
-      toast.success('Loop deleted successfully');
     } catch (error) {
       console.error('Error deleting loop:', error);
-      toast.error('Failed to delete loop');
+      // Rollback - restore the deleted loop
+      if (loopToDelete) {
+        setLoops(prev => [loopToDelete, ...prev]);
+      }
+      toast.error('Failed to delete loop. Restored.');
     }
   };
 
   const handleLoopClick = (loop) => {
-  setDetailLoop(loop);
-};
+    setDetailLoop(loop);
+  };
 
   // Create/Edit flow handled by CreateLoopModal exclusively
 
@@ -325,7 +375,7 @@ const OrbitLoopDashboard = () => {
   const totalCollateral = filteredLoops.reduce((sum, l) => sum + (parseFloat(l.collateralValue) || 0), 0);
   const totalDebt = filteredLoops.reduce((sum, l) => sum + (parseFloat(l.debtValue) || 0), 0);
   const netWorth = totalCollateral - totalDebt;
-  
+
   const avgHealthFactor = filteredLoops.length > 0 ?
     filteredLoops.reduce((sum, l) => {
       const hf = parseFloat(l.healthFactor) || 0;
@@ -336,8 +386,8 @@ const OrbitLoopDashboard = () => {
   const riskDistributionData = useMemo(() => {
     const safe = filteredLoops.filter(l => (parseFloat(l.healthFactor) || 0) >= 1.6).length;
     const warning = filteredLoops.filter(l => {
-        const hf = parseFloat(l.healthFactor) || 0;
-        return hf >= 1.2 && hf < 1.6;
+      const hf = parseFloat(l.healthFactor) || 0;
+      return hf >= 1.2 && hf < 1.6;
     }).length;
     const critical = filteredLoops.filter(l => (parseFloat(l.healthFactor) || 0) < 1.2).length;
 
@@ -361,7 +411,7 @@ const OrbitLoopDashboard = () => {
   }
 
   return (
-    <div className={`relative min-h-screen font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
+    <div className={`relative min-h-screen overflow-x-hidden font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
       <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-[#FFE066]/14 via-transparent to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(1200px 1000px at 12% 12%, rgba(255,224,102,0.22) 0%, rgba(255,224,102,0.12) 34%, transparent 76%)' }} />
       <div className="pointer-events-none absolute inset-0 z-0">
@@ -369,7 +419,7 @@ const OrbitLoopDashboard = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] bg-[#FFE066]/8 rounded-full blur-[180px]" />
       </div>
       <main className="relative z-10 p-8 max-w-[1600px] mx-auto">
-        
+
         {/* Header Section */}
         <header className="flex justify-between items-end mb-10">
           <div>
@@ -379,7 +429,7 @@ const OrbitLoopDashboard = () => {
               Global Overview & Risk Management
             </p>
           </div>
-          
+
           <div className="flex gap-4">
             {/* Wallet Filter */}
             <OrbitSelect
@@ -402,9 +452,9 @@ const OrbitLoopDashboard = () => {
               className="w-48 border-[#333] hover:bg-[#141414]"
               contentClassName="border-[#333]"
             />
-            
+
             {/* Primary Action */}
-            <button 
+            <button
               onClick={handleAddLoop}
               className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
               style={{ backgroundColor: COLORS.primary, color: COLORS.textDark }}
@@ -417,9 +467,9 @@ const OrbitLoopDashboard = () => {
 
         {/* Hero / Bento Grid Summary */}
         <section className="grid grid-cols-12 gap-6 mb-12">
-          
+
           {/* Card 1: Total Equity (Hero Yellow) */}
-          <div 
+          <div
             className="col-span-12 lg:col-span-4 p-8 rounded-[32px] flex flex-col justify-between relative overflow-hidden transition-all hover:scale-[1.01]"
             style={{ backgroundColor: COLORS.primary }}
           >
@@ -455,7 +505,7 @@ const OrbitLoopDashboard = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* Visualization Bar for Aggregate Leverage */}
             <div>
               <div className="flex justify-between text-xs mb-2">
@@ -469,72 +519,72 @@ const OrbitLoopDashboard = () => {
                 <div className="w-[30%] bg-[#FF6633]"></div>
               </div>
               <div className="flex gap-4 mt-3">
-                 <div className="flex items-center gap-2 text-xs text-[#666]">
-                    <div className="w-2 h-2 rounded-full bg-[#3385FF]"></div> Low
-                 </div>
-                 <div className="flex items-center gap-2 text-xs text-[#666]">
-                    <div className="w-2 h-2 rounded-full bg-[#33FFCC]"></div> Med
-                 </div>
-                 <div className="flex items-center gap-2 text-xs text-[#666]">
-                    <div className="w-2 h-2 rounded-full bg-[#FF6633]"></div> High
-                 </div>
+                <div className="flex items-center gap-2 text-xs text-[#666]">
+                  <div className="w-2 h-2 rounded-full bg-[#3385FF]"></div> Low
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#666]">
+                  <div className="w-2 h-2 rounded-full bg-[#33FFCC]"></div> Med
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#666]">
+                  <div className="w-2 h-2 rounded-full bg-[#FF6633]"></div> High
+                </div>
               </div>
             </div>
           </div>
 
           {/* Card 3: Risk Distribution Chart */}
           <div className="col-span-12 md:col-span-6 lg:col-span-3 p-6 rounded-[32px] bg-[#141414] border border-[#222] flex flex-col items-center justify-center relative">
-             <h3 className="absolute top-6 left-6 text-white text-sm font-medium">Loop Risk Levels</h3>
-             <div className="w-full h-[160px] mt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={riskDistributionData.length > 0 ? riskDistributionData : [{name:'None', value:1, color:'#333'}]}
-                      innerRadius={50}
-                      outerRadius={70}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {(riskDistributionData.length > 0 ? riskDistributionData : [{name:'None', value:1, color:'#333'}]).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip 
-                      contentStyle={{ backgroundColor: '#222', borderColor: '#333', borderRadius: '8px' }}
-                      itemStyle={{ color: '#fff' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-             </div>
-             {/* Center Text in Donut */}
-             <div className="absolute inset-0 flex items-center justify-center pt-4 pointer-events-none">
-                <div className="text-center">
-                   <span className="block text-2xl font-bold text-white">{filteredLoops.length}</span>
-                   <span className="text-[10px] uppercase text-[#666]">Loops</span>
-                </div>
-             </div>
+            <h3 className="absolute top-6 left-6 text-white text-sm font-medium">Loop Risk Levels</h3>
+            <div className="w-full h-[160px] mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={riskDistributionData.length > 0 ? riskDistributionData : [{ name: 'None', value: 1, color: '#333' }]}
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {(riskDistributionData.length > 0 ? riskDistributionData : [{ name: 'None', value: 1, color: '#333' }]).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    contentStyle={{ backgroundColor: '#222', borderColor: '#333', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Center Text in Donut */}
+            <div className="absolute inset-0 flex items-center justify-center pt-4 pointer-events-none">
+              <div className="text-center">
+                <span className="block text-2xl font-bold text-white">{filteredLoops.length}</span>
+                <span className="text-[10px] uppercase text-[#666]">Loops</span>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Tab Navigation */}
         <div className="flex gap-8 border-b border-[#222] mb-8">
-          <button 
+          <button
             onClick={() => setActiveTab('active')}
             className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'active' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
           >
             Active Loops ({loops.filter(l => l.status !== 'Closed').length})
             {activeTab === 'active' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('history')}
             className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === 'history' ? 'text-white' : 'text-[#666] hover:text-[#999]'}`}
           >
             History
             {activeTab === 'history' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFE066] rounded-t-full"></div>}
           </button>
-          <button 
-             className="ml-auto flex items-center gap-2 text-[#666] hover:text-white text-sm"
+          <button
+            className="ml-auto flex items-center gap-2 text-[#666] hover:text-white text-sm"
           >
             <TrendingUp size={14} />
             Analytics View
@@ -544,15 +594,15 @@ const OrbitLoopDashboard = () => {
         {/* Loops Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredLoops.map((loop) => (
-            <LoopCard 
-              key={loop.id} 
-              loop={loop} 
+            <LoopCard
+              key={loop.id}
+              loop={loop}
               onClick={() => handleLoopClick(loop)}
             />
           ))}
 
           {/* "Add New" Placeholder Card */}
-          <button 
+          <button
             onClick={handleAddLoop}
             className="group border border-dashed border-[#333] rounded-[24px] flex flex-col items-center justify-center min-h-[300px] hover:bg-[#111] hover:border-[#444] transition-all"
           >
@@ -567,16 +617,16 @@ const OrbitLoopDashboard = () => {
       </main>
 
       {/* --- HIDDEN FUNCTIONAL MODALS --- */}
-     <LoopModal 
-   isOpen={!!detailLoop}
-   onClose={() => setDetailLoop(null)}
-   loop={detailLoop}
-   onEdit={(l) => {
-      setDetailLoop(null);
-      handleEditLoop(l); // Opens the form modal
-   }}
-   onDelete={handleDeleteLoop}
-/>
+      <LoopModal
+        isOpen={!!detailLoop}
+        onClose={() => setDetailLoop(null)}
+        loop={detailLoop}
+        onEdit={(l) => {
+          setDetailLoop(null);
+          handleEditLoop(l); // Opens the form modal
+        }}
+        onDelete={handleDeleteLoop}
+      />
 
       {isCreateModalOpen && (
         <CreateLoopModal
