@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { LayoutGrid, Bell, User, Layers, Activity, RefreshCw, Plus, ChevronDown } from 'lucide-react';
+import { LayoutGrid, Bell, User, Layers, Activity, RefreshCw, Plus, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
 import CreateLoopModal from '@/components/CreateLoopModal';
 import CEXPositionForm from '@/components/CEXPositionForm';
 import PositionFormModal from '@/components/PositionFormModal';
@@ -11,6 +11,7 @@ import AIChatBar from '../components/AIChatBar';
 import MarkdownMessage from '../components/MarkdownMessage';
 import KPISection from '../components/KPISection';
 import InsightCard from '../components/InsightCard';
+import { InsightSkeletonGrid } from '../components/InsightCardSkeleton';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 
@@ -31,6 +32,7 @@ const OrbitAIDashboard = () => {
   const [isPositionsFormOpen, setIsPositionsFormOpen] = useState(false);
   const [positionsEditing, setPositionsEditing] = useState(null);
   const [isTypePickerOpen, setIsTypePickerOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const pillRef = useRef(null);
 
   const actionLabel = (type) => {
@@ -108,6 +110,55 @@ const OrbitAIDashboard = () => {
     }
   };
 
+  // Force regenerate AI insights (bypass cache)
+  const regenerateInsights = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please sign in to regenerate insights.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setIsRegenerating(true);
+    setInsights([]);
+    setRiskMetrics(null);
+    setRiskScore(null);
+    try {
+      // Use generate-analysis endpoint which always creates fresh insights
+      const context = await axios.get(`${apiBase()}/dashboard/stats`);
+      setStats(context.data);
+
+      const analysisRes = await axios.post(`${apiBase()}/dashboard/generate-analysis`, {
+        portfolio_data: context.data
+      });
+
+      if (analysisRes.data) {
+        setInsights(analysisRes.data.insights || []);
+        toast({
+          title: "AI Insights Regenerated",
+          description: "Fresh analysis has been generated.",
+        });
+      }
+
+      // Also refresh the full insights to get risk metrics
+      const fullRes = await axios.get(`${apiBase()}/dashboard/insights`);
+      if (fullRes.data) {
+        setRiskMetrics(fullRes.data.risk_metrics || null);
+        setRiskScore(fullRes.data.risk_score);
+      }
+    } catch (error) {
+      console.error("Failed to regenerate insights", error);
+      toast({
+        title: "Regeneration Failed",
+        description: "Could not generate new insights. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -121,11 +172,11 @@ const OrbitAIDashboard = () => {
 
         // Fetch AI Analysis (Insights + Risk)
         const analysisRes = await axios.get(`${apiBase()}/dashboard/insights`);
-        
+
         if (analysisRes.data) {
-            setInsights(analysisRes.data.insights || []);
-            setRiskMetrics(analysisRes.data.risk_metrics || []);
-            setRiskScore(analysisRes.data.risk_score);
+          setInsights(analysisRes.data.insights || []);
+          setRiskMetrics(analysisRes.data.risk_metrics || []);
+          setRiskScore(analysisRes.data.risk_score);
         }
 
       } catch (error) {
@@ -186,7 +237,7 @@ const OrbitAIDashboard = () => {
 
   const handleChatResponse = (query, response) => {
     setChatHistory(prev => [
-      ...prev, 
+      ...prev,
       { role: 'user', content: query },
       { role: 'model', content: response }
     ]);
@@ -233,7 +284,7 @@ const OrbitAIDashboard = () => {
   };
 
   return (
-  <div className="min-h-screen bg-black text-white p-6 md:p-8">
+    <div className="min-h-screen bg-black text-white p-6 md:p-8">
       {/* Ambient Background */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#8B5CF6]/10 rounded-full blur-[150px]" />
@@ -252,7 +303,7 @@ const OrbitAIDashboard = () => {
               <span className="text-[#33FFCC] text-sm font-medium tracking-wide uppercase">Orbit AI Systems Online</span>
             </div>
           </div>
-          
+
           <button className="flex items-center gap-2 px-5 py-2.5 bg-[#1A1A1A] hover:bg-[#222] border border-[#333] rounded-full text-sm font-medium transition-all hover:border-[#8B5CF6]/50 group">
             <LayoutGrid className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
             Customize Layout
@@ -265,24 +316,23 @@ const OrbitAIDashboard = () => {
         {/* Chat History Display (Temporary for MVP) */}
         {chatHistory.length > 0 && (
           <div className="mb-8 p-6 bg-[#141414] border border-[#222] rounded-[24px]">
-             <h3 className="text-lg font-semibold text-white mb-4">Recent Conversation</h3>
-             <div className="space-y-4 max-h-[300px] overflow-y-auto">
-                {chatHistory.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`max-w-[80%] p-3 rounded-2xl ${
-                        msg.role === 'user' 
-                        ? 'bg-[#8B5CF6]/20 text-white rounded-tr-none' 
-                        : 'bg-[#222] text-gray-300 rounded-tl-none'
-                     }`}>
-                        {msg.role === 'user' ? (
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                        ) : (
-                          <MarkdownMessage content={msg.content} />
-                        )}
-                     </div>
+            <h3 className="text-lg font-semibold text-white mb-4">Recent Conversation</h3>
+            <div className="space-y-4 max-h-[300px] overflow-y-auto">
+              {chatHistory.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-2xl ${msg.role === 'user'
+                    ? 'bg-[#8B5CF6]/20 text-white rounded-tr-none'
+                    : 'bg-[#222] text-gray-300 rounded-tl-none'
+                    }`}>
+                    {msg.role === 'user' ? (
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    ) : (
+                      <MarkdownMessage content={msg.content} />
+                    )}
                   </div>
-                ))}
-             </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -293,18 +343,39 @@ const OrbitAIDashboard = () => {
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-               <h2 className="text-2xl font-bold text-white">Orbit Intelligence Stream</h2>
-               <span className="bg-[#8B5CF6] text-black text-xs font-bold px-2 py-0.5 rounded-full">
-                 {insights.length} NEW
-               </span>
+              <h2 className="text-2xl font-bold text-white">Orbit Intelligence Stream</h2>
+              {insights.length > 0 ? (
+                <span className="bg-[#8B5CF6] text-black text-xs font-bold px-2 py-0.5 rounded-full">
+                  {insights.length} NEW
+                </span>
+              ) : !stats && (
+                <span className="bg-[#333] text-gray-400 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                  Loading...
+                </span>
+              )}
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {insights.map((insight) => (
-              <InsightCard key={insight.id} insight={insight} />
-            ))}
-          </div>
+
+          {/* Show skeleton loaders when insights are empty and stats haven't loaded yet */}
+          {insights.length === 0 && !stats ? (
+            <InsightSkeletonGrid count={3} />
+          ) : insights.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 mb-4 rounded-full bg-[#222] flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-[#8B5CF6]" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No insights yet</h3>
+              <p className="text-gray-400 text-sm max-w-md">
+                Click "Regenerate AI" to generate fresh AI-powered insights about your portfolio.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {insights.map((insight) => (
+                <InsightCard key={insight.id} insight={insight} />
+              ))}
+            </div>
+          )}
         </section>
         {/* Quick Actions Pill - Simplified */}
         <div ref={pillRef} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#141414]/90 backdrop-blur-xl border border-[#222] rounded-full py-2 px-3 flex items-center gap-2 shadow-2xl z-40">
@@ -321,11 +392,29 @@ const OrbitAIDashboard = () => {
           <div className="w-px h-6 bg-[#333]" />
           <button
             className="w-10 h-10 rounded-full bg-[#FFE066] text-black font-bold text-sm hover:bg-[#FFD633] transition-colors flex items-center justify-center"
-            title="Refresh data"
-            aria-label="Refresh"
+            title="Refresh dashboard data"
+            aria-label="Refresh Data"
             onClick={refreshData}
           >
             <RefreshCw size={16} />
+          </button>
+          <div className="w-px h-6 bg-[#333]" />
+          <button
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${isRegenerating
+              ? 'bg-[#8B5CF6]/20 text-[#8B5CF6] cursor-wait'
+              : 'bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] text-white hover:from-[#7C3AED] hover:to-[#8B5CF6] hover:shadow-lg hover:shadow-[#8B5CF6]/25'
+              }`}
+            title="Regenerate AI insights"
+            aria-label="Regenerate AI Insights"
+            onClick={regenerateInsights}
+            disabled={isRegenerating}
+          >
+            {isRegenerating ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Sparkles size={14} />
+            )}
+            <span className="hidden sm:inline">{isRegenerating ? 'Generating...' : 'Regenerate AI'}</span>
           </button>
 
           {isTypePickerOpen && (
