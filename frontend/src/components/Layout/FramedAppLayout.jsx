@@ -80,7 +80,7 @@ const FramedAppLayout = ({ children }) => {
 
   return (
     <div className="h-screen w-screen bg-[#050505] flex antialiased overflow-hidden relative">
-      
+
       {/* Global subtle gradient across the entire background frame */}
       <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-br from-[#FFE066]/10 via-transparent to-transparent" />
       {/* Additional radial glow to intensify yellow at top-left without touching line 85 */}
@@ -92,8 +92,8 @@ const FramedAppLayout = ({ children }) => {
         }}
       />
 
-      {/* Framing Navigation */}
-      <nav className="w-20 flex-shrink-0 flex flex-col items-center py-6 gap-4 relative">
+      {/* Framing Navigation - Hidden on Mobile */}
+      <nav className="hidden md:flex w-20 flex-shrink-0 flex-col items-center py-6 gap-4 relative">
         {/* App Icon */}
         <div className="w-14 h-14 rounded-xl flex items-center justify-center translate-x-1">
           <img src="/logo.png" alt="App Logo" className="w-14 h-14 object-contain bg-transparent" style={{ background: 'transparent' }} />
@@ -121,12 +121,44 @@ const FramedAppLayout = ({ children }) => {
         </div>
       </nav>
 
+      {/* MOBILE BOTTOM NAVIGATION PILL */}
+      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <div className="flex items-center gap-1 p-1.5 rounded-full bg-[#141414]/80 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          {mainNavItems.map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => `
+                 p-3 rounded-full transition-all duration-300 relative group
+                 ${isActive ? 'bg-[#FFE066] text-black shadow-[0_0_15px_rgba(255,224,102,0.4)]' : 'text-[#888] hover:text-white hover:bg-white/5'}
+               `}
+            >
+              <item.icon size={20} strokeWidth={2} />
+              {/* Active Dot Indicator (Optional flair) */}
+              {/* {isActive && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FFE066]" />} */}
+            </NavLink>
+          ))}
+
+          <div className="w-px h-6 bg-white/10 mx-1"></div>
+
+          <NavLink
+            to="/profile"
+            className={({ isActive }) => `
+               p-3 rounded-full transition-all duration-300
+               ${isActive ? 'bg-[#33FFCC] text-black shadow-[0_0_15px_rgba(51,255,204,0.4)]' : 'text-[#888] hover:text-white hover:bg-white/5'}
+             `}
+          >
+            <User size={20} strokeWidth={2} />
+          </NavLink>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 min-w-0 h-screen p-2">
+      <div className="flex-1 min-w-0 h-screen p-0 md:p-2">
         {/* Gradient frame wrapper */}
-        <div className="h-full w-full rounded-xl p-[2px] bg-gradient-to-tl from-[#FFE066]/12 via-transparent to-transparent">
-          <main className="h-full w-full bg-[#141414] border border-[#222] rounded-xl overflow-hidden">
-            <div className="h-full overflow-y-auto">
+        <div className="h-full w-full rounded-none md:rounded-xl p-0 md:p-[2px] bg-transparent md:bg-gradient-to-tl from-[#FFE066]/12 via-transparent to-transparent">
+          <main className="h-full w-full bg-[#050505] md:bg-[#141414] border-0 md:border border-[#222] rounded-none md:rounded-xl overflow-hidden relative">
+            <div className="h-full overflow-y-auto pb-24 md:pb-0">
               {children}
             </div>
           </main>
