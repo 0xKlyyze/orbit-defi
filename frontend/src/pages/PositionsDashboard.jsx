@@ -371,13 +371,19 @@ const PositionsDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex overflow-x-hidden font-sans selection:bg-[#FFE066] selection:text-black" style={{ backgroundColor: COLORS.bg }}>
+    <div className="min-h-screen flex overflow-x-hidden font-sans selection:bg-[#FFE066] selection:text-black relative" style={{ backgroundColor: COLORS.bg }}>
+      {/* Background Gradients */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-[#FFE066]/14 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-0 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(1200px 1000px at 12% 12%, rgba(255,224,102,0.22) 0%, rgba(255,224,102,0.12) 34%, transparent 76%)' }} />
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#8B5CF6]/12 rounded-full blur-[160px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] bg-[#FFE066]/8 rounded-full blur-[180px]" />
+      </div>
 
       {/* Global sidebar is now provided by App-level layout */}
 
       {/* 2. Main Content */}
-      {/* 2. Main Content */}
-      <main className={`flex-1 p-4 md:p-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out no-scrollbar ${pageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+      <main className={`relative z-10 flex-1 p-4 md:p-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out no-scrollbar ${pageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
 
         {/* Header */}
         <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6 md:mb-10">
