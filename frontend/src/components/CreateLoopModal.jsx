@@ -364,7 +364,7 @@ const AdvancedStepCard = ({ step, index, totalSteps, updateStep, removeStep, mov
 
 // Stabilized screen components to avoid remount-triggered animations
 const ScreenModeSelectionStable = ({ onSelectQuick, onSelectAdvanced }) => (
-  <div className="h-full flex flex-col items-center justify-center p-8 animate-in fade-in zoom-in duration-300">
+  <div className="h-full flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in zoom-in duration-300">
     <div className="text-center mb-10">
       <h2 className="text-3xl font-bold text-white mb-2">Select Strategy Type</h2>
       <p className="text-[#888]">Choose how you want to construct your position</p>
@@ -401,7 +401,7 @@ const ScreenModeSelectionStable = ({ onSelectQuick, onSelectAdvanced }) => (
 );
 
 const ScreenQuickLoopStable = ({ quickForm, setQuickForm }) => (
-  <div className="h-full p-8 overflow-y-auto animate-in slide-in-from-right duration-300">
+  <div className="h-full p-4 md:p-8 overflow-y-auto animate-in slide-in-from-right duration-300">
     <div className="max-w-2xl mx-auto">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-6 opacity-60">
@@ -512,7 +512,7 @@ const ScreenQuickLoopStable = ({ quickForm, setQuickForm }) => (
 );
 
 const ScreenAdvancedLoopStable = ({ advForm, setAdvForm, advSteps, updateAdvStep, removeAdvStep, addAdvStep, moveAdvStep, duplicateAdvStep }) => (
-  <div className="h-full p-8 overflow-y-auto animate-in slide-in-from-right duration-300">
+  <div className="h-full p-4 md:p-8 overflow-y-auto animate-in slide-in-from-right duration-300">
     <div className="max-w-3xl mx-auto">
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-6 opacity-60">
@@ -1223,11 +1223,11 @@ const OrbitCreateLoop = ({ onClose, onSave, loop }) => {
   // --- MAIN RENDER ---
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-[1400px] h-[90vh] bg-[#050505] rounded-[32px] overflow-hidden flex shadow-2xl border border-[#222]">
+    <div className="fixed inset-0 z-[1000000] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm p-0 md:p-4 animate-in fade-in duration-200">
+      <div className="w-full h-full md:h-auto md:max-h-[90vh] md:max-w-[1400px] bg-[#050505] rounded-none md:rounded-[32px] overflow-hidden flex flex-col md:flex-row shadow-2xl border-0 md:border border-[#222] relative">
 
         {/* LEFT SIDE: Content */}
-        <div className="flex-1 flex flex-col relative">
+        <div className="flex-1 flex flex-col relative overflow-hidden">
           <div className="h-20 px-8 flex items-center justify-between border-b border-[#111]">
             <div className="flex items-center gap-3">
               <button
@@ -1302,8 +1302,8 @@ const OrbitCreateLoop = ({ onClose, onSave, loop }) => {
           </div>
         </div>
 
-        {/* RIGHT SIDE: Real-time Stats */}
-        <div className="w-[420px] bg-[#101010] border-l border-[#222] p-8 flex flex-col relative z-10 overflow-y-auto">
+        {/* RIGHT SIDE: Real-time Stats - Hidden on Mobile */}
+        <div className="hidden md:flex w-[420px] bg-[#101010] border-l border-[#222] p-8 flex-col relative z-10 overflow-y-auto shrink-0">
           <div className="mb-8">
             <h3 className="text-white font-bold text-lg mb-1 flex items-center gap-2">
               <TrendingUp size={18} className="text-[#FFE066]" />
