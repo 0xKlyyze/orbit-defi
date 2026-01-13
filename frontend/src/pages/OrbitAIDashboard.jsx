@@ -284,7 +284,7 @@ const OrbitAIDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-6 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 relative overflow-hidden">
       {/* Ambient Background (Restored) */}
       <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-[#FFE066]/14 via-transparent to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(1200px 1000px at 12% 12%, rgba(255,224,102,0.22) 0%, rgba(255,224,102,0.12) 34%, transparent 76%)' }} />
@@ -303,16 +303,6 @@ const OrbitAIDashboard = () => {
             </div>
             <h1 className="text-white text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500">Orbit AI</h1>
           </div>
-          {/* Row 2: Add Button (Full Width for AI) */}
-          <button
-            onClick={() => setIsTypePickerOpen((v) => !v)}
-            className="w-full h-12 rounded-xl flex items-center justify-between px-4 bg-[#141414] border border-[#222] active:scale-95 transition-transform"
-          >
-            <span className="text-[#888] text-sm">Start new analysis or position...</span>
-            <div className="w-8 h-8 rounded-lg bg-[#333] flex items-center justify-center text-[#FFE066]">
-              <Plus size={18} />
-            </div>
-          </button>
         </header>
 
         {/* Desktop Header (Spacious) */}
@@ -409,7 +399,7 @@ const OrbitAIDashboard = () => {
             onClick={() => setIsTypePickerOpen((v) => !v)}
           >
             <Plus size={16} />
-            <span className="text-sm font-semibold">Add Position</span>
+            <span className="text-xs md:text-sm font-semibold whitespace-nowrap">Add Position</span>
             <ChevronDown size={16} />
           </button>
           <div className="w-px h-6 bg-[#333]" />

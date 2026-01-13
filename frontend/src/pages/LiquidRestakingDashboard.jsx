@@ -439,9 +439,9 @@ const OrbitLoopDashboard = () => {
                   value={filters.wallet}
                   onChange={(val) => setFilters(prev => ({ ...prev, wallet: val }))}
                   options={["all", ...uniqueWallets]}
-                  placeholder="All"
+                  placeholder="Wallet"
                   icon={<Wallet size={14} className="text-[#888]" />}
-                  className="w-24 border-none bg-transparent"
+                  className="flex-1 min-w-0 border-none bg-transparent"
                   contentClassName="border-[#333]"
                 />
                 <OrbitSelect
@@ -450,9 +450,11 @@ const OrbitLoopDashboard = () => {
                   options={["all", ...uniqueChains]}
                   placeholder="Chain"
                   icon={<Layers size={14} className="text-[#888]" />}
-                  className="w-24 border-none bg-transparent"
+                  className="flex-1 min-w-0 border-none bg-transparent"
                   contentClassName="border-[#333]"
                 />
+
+
               </div>
             </div>
             {/* Mobile Add Button (Icon Only) */}

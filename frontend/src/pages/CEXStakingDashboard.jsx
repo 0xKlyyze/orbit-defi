@@ -420,7 +420,7 @@ const CEXStakingDashboard = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#8B5CF6]/12 rounded-full blur-[160px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] bg-[#FFE066]/8 rounded-full blur-[180px]" />
       </div>
-      <main className="relative z-10 p-8 max-w-[1600px] mx-auto">
+      <main className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
 
         {/* Mobile Header (New Unified Standard) */}
         <header className="md:hidden flex flex-col gap-4 mb-6">
