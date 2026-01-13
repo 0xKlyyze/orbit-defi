@@ -420,17 +420,63 @@ const OrbitLoopDashboard = () => {
       </div>
       <main className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
 
-        {/* Header Section */}
-        <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6 md:mb-10">
+        {/* Mobile Header (New Unified Standard) */}
+        <header className="md:hidden flex flex-col gap-4 mb-6">
+          {/* Row 1: Logo + Title */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center border border-[#222]">
+              <img src="/logo.png" alt="Orbit Logo" className="w-5 h-5 object-contain" />
+            </div>
+            <h1 className="text-white text-xl font-bold tracking-tight">Active Loops</h1>
+          </div>
+
+          {/* Row 2: Controls */}
+          <div className="flex gap-3">
+            <div className="flex-1 h-12 px-2 rounded-xl bg-[#141414] border border-[#222] flex items-center gap-2 focus-within:border-[#FFE066] transition-colors relative">
+              {/* Mobile Compact Filters */}
+              <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar">
+                <OrbitSelect
+                  value={filters.wallet}
+                  onChange={(val) => setFilters(prev => ({ ...prev, wallet: val }))}
+                  options={["all", ...uniqueWallets]}
+                  placeholder="All"
+                  icon={<Wallet size={14} className="text-[#888]" />}
+                  className="w-24 border-none bg-transparent"
+                  contentClassName="border-[#333]"
+                />
+                <OrbitSelect
+                  value={filters.chain}
+                  onChange={(val) => setFilters(prev => ({ ...prev, chain: val }))}
+                  options={["all", ...uniqueChains]}
+                  placeholder="Chain"
+                  icon={<Layers size={14} className="text-[#888]" />}
+                  className="w-24 border-none bg-transparent"
+                  contentClassName="border-[#333]"
+                />
+              </div>
+            </div>
+            {/* Mobile Add Button (Icon Only) */}
+            <button
+              onClick={handleAddLoop}
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(255,224,102,0.15)] active:scale-95 transition-transform"
+              style={{ backgroundColor: COLORS.primary, color: 'black' }}
+            >
+              <Plus size={24} />
+            </button>
+          </div>
+        </header>
+
+        {/* Desktop Header (Spacious) */}
+        <header className="hidden md:flex justify-between items-end mb-10">
           <div>
-            <h1 className="text-white text-2xl md:text-3xl font-bold tracking-tight mb-2">Active Loops</h1>
-            <p className="text-[#666] flex items-center gap-2 text-xs md:text-sm">
+            <h1 className="text-white text-3xl font-bold tracking-tight mb-2">Active Loops</h1>
+            <p className="text-[#666] flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#33FFCC]"></span>
               Global Overview & Risk Management
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex gap-4">
             {/* Wallet Filter */}
             <OrbitSelect
               value={filters.wallet}
@@ -438,7 +484,7 @@ const OrbitLoopDashboard = () => {
               options={["all", ...uniqueWallets]}
               placeholder="All Wallets"
               icon={<Wallet size={16} className="text-[#888]" />}
-              className="w-full md:w-48 border-[#333] hover:bg-[#141414]"
+              className="w-48 border-[#333] hover:bg-[#141414]"
               contentClassName="border-[#333]"
             />
 
@@ -449,14 +495,14 @@ const OrbitLoopDashboard = () => {
               options={["all", ...uniqueChains]}
               placeholder="All Chains"
               icon={<Layers size={16} className="text-[#888]" />}
-              className="w-full md:w-48 border-[#333] hover:bg-[#141414]"
+              className="w-48 border-[#333] hover:bg-[#141414]"
               contentClassName="border-[#333]"
             />
 
             {/* Primary Action */}
             <button
               onClick={handleAddLoop}
-              className="h-12 px-8 rounded-full flex items-center justify-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
+              className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
               style={{ backgroundColor: COLORS.primary, color: COLORS.textDark }}
             >
               <Plus size={20} />

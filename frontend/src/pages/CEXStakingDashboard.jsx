@@ -422,8 +422,42 @@ const CEXStakingDashboard = () => {
       </div>
       <main className="relative z-10 p-8 max-w-[1600px] mx-auto">
 
-        {/* Header Section */}
-        <header className="flex justify-between items-end mb-10">
+        {/* Mobile Header (New Unified Standard) */}
+        <header className="md:hidden flex flex-col gap-4 mb-6">
+          {/* Row 1: Logo + Title */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center border border-[#222]">
+              <img src="/logo.png" alt="Orbit Logo" className="w-5 h-5 object-contain" />
+            </div>
+            <h1 className="text-white text-xl font-bold tracking-tight">CEX Staking</h1>
+          </div>
+
+          {/* Row 2: Controls */}
+          <div className="flex gap-3">
+            {/* Mobile Search */}
+            <div className="flex-1 h-12 px-4 rounded-xl bg-[#141414] border border-[#222] flex items-center gap-2 focus-within:border-[#FFE066] transition-colors relative">
+              <Search size={18} className="text-[#666]" />
+              <input
+                type="text"
+                placeholder="Search assets..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-transparent border-none outline-none text-white text-sm w-full placeholder:text-[#444]"
+              />
+            </div>
+            {/* Mobile Add Button (Icon Only) */}
+            <button
+              onClick={handleAddPosition}
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(255,224,102,0.15)] active:scale-95 transition-transform"
+              style={{ backgroundColor: COLORS.primary, color: 'black' }}
+            >
+              <Plus size={24} />
+            </button>
+          </div>
+        </header>
+
+        {/* Desktop Header (Spacious) */}
+        <header className="hidden md:flex justify-between items-end mb-10">
           <div>
             <h1 className="text-white text-3xl font-bold tracking-tight mb-2">CEX Staking</h1>
             <p className="text-[#666] flex items-center gap-2">

@@ -385,17 +385,50 @@ const PositionsDashboard = () => {
       {/* 2. Main Content */}
       <main className={`relative z-10 flex-1 p-4 md:p-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out no-scrollbar ${pageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
 
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6 md:mb-10">
+        {/* Mobile Header (New Unified Standard) */}
+        <header className="md:hidden flex flex-col gap-4 mb-6">
+          {/* Row 1: Logo + Title */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center border border-[#222]">
+              <img src="/logo.png" alt="Orbit Logo" className="w-5 h-5 object-contain" />
+            </div>
+            <h1 className="text-white text-xl font-bold tracking-tight">Standard Dashboard</h1>
+          </div>
+
+          {/* Row 2: Controls */}
+          <div className="flex gap-3">
+            <div className="flex-1 h-12 px-4 rounded-xl bg-[#141414] border border-[#222] flex items-center gap-2 focus-within:border-[#FFE066] transition-colors">
+              <Search size={18} className="text-[#666]" />
+              <input
+                type="text"
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                placeholder="Search..."
+                className="bg-transparent border-none outline-none text-white text-sm w-full placeholder:text-[#444]"
+              />
+            </div>
+            {/* Mobile Add Button (Icon Only) */}
+            <button
+              onClick={handleAddClick}
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(255,224,102,0.15)] active:scale-95 transition-transform"
+              style={{ backgroundColor: COLORS.primary, color: 'black' }}
+            >
+              <Plus size={24} />
+            </button>
+          </div>
+        </header>
+
+        {/* Desktop Header (Restored Spacious Layout) */}
+        <header className="hidden md:flex justify-between items-end mb-10">
           <div>
-            <h1 className="text-white text-2xl md:text-3xl font-bold tracking-tight mb-2">Standard Dashboard</h1>
-            <p className="text-[#666] flex items-center gap-2 text-xs md:text-sm">
+            <h1 className="text-white text-3xl font-bold tracking-tight mb-2">Standard Dashboard</h1>
+            <p className="text-[#666] flex items-center gap-2 text-sm">
               <span className="w-2 h-2 rounded-full bg-[#FFE066]"></span>
               Manual Portfolio Tracking
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          <div className="flex gap-4">
             {/* Filter Toggles */}
             <OrbitSelect
               value={filters.wallet}
@@ -403,14 +436,14 @@ const PositionsDashboard = () => {
               options={['all', ...uniqueWallets]}
               placeholder="All Wallets"
               icon={<Wallet size={16} className="text-[#888]" />}
-              className="border-[#333] w-full md:w-48 hover:bg-[#141414]"
+              className="border-[#333] w-48 hover:bg-[#141414]"
               contentClassName="min-w-[200px]"
             />
 
-            {/* Add Button */}
+            {/* Desktop Add Button */}
             <button
               onClick={handleAddClick}
-              className="h-12 px-8 rounded-full flex items-center justify-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
+              className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
               style={{ backgroundColor: COLORS.primary, color: 'black' }}
             >
               <Plus size={20} />
@@ -432,6 +465,7 @@ const PositionsDashboard = () => {
                 <Wallet size={18} className="text-black" />
                 <span className="text-black font-bold text-xs uppercase">Net Worth</span>
               </div>
+              {/* Responsive Text Fix: Reduced to text-3xl on mobile to prevent clipping */}
               <h2 className="text-3xl md:text-4xl font-bold text-black tracking-tight">${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
             </div>
             <div className="mt-4 pt-4 border-t border-black/10">
@@ -495,8 +529,8 @@ const PositionsDashboard = () => {
           </div>
         </section>
 
-        {/* Action Toolbar */}
-        <div className="flex justify-between items-center mb-6">
+        {/* Action Toolbar (Desktop Only Now - integrated into mobile header) */}
+        <div className="hidden md:flex justify-between items-center mb-6">
           <div className="flex gap-2">
             <div className="h-10 px-4 rounded-xl bg-[#141414] border border-[#222] flex items-center gap-2 w-64 focus-within:border-[#FFE066] transition-colors">
               <Search size={16} className="text-[#666]" />

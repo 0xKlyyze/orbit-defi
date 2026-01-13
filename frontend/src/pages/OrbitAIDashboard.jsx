@@ -294,8 +294,29 @@ const OrbitAIDashboard = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-12">
+        {/* Mobile Header (New Unified Standard) */}
+        <header className="md:hidden flex flex-col gap-4 mb-6">
+          {/* Row 1: Logo + Title */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center border border-[#222]">
+              <img src="/logo.png" alt="Orbit Logo" className="w-5 h-5 object-contain" />
+            </div>
+            <h1 className="text-white text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500">Orbit AI</h1>
+          </div>
+          {/* Row 2: Add Button (Full Width for AI) */}
+          <button
+            onClick={() => setIsTypePickerOpen((v) => !v)}
+            className="w-full h-12 rounded-xl flex items-center justify-between px-4 bg-[#141414] border border-[#222] active:scale-95 transition-transform"
+          >
+            <span className="text-[#888] text-sm">Start new analysis or position...</span>
+            <div className="w-8 h-8 rounded-lg bg-[#333] flex items-center justify-center text-[#FFE066]">
+              <Plus size={18} />
+            </div>
+          </button>
+        </header>
+
+        {/* Desktop Header (Spacious) */}
+        <header className="hidden md:flex justify-between items-center mb-12">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500 mb-2 pb-1">
               Good evening, Commander
