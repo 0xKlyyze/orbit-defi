@@ -156,9 +156,9 @@ const FramedAppLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 min-w-0 h-screen p-0 md:p-2">
         {/* Gradient frame wrapper */}
-        <div className="h-full w-full rounded-none md:rounded-xl p-0 md:p-[2px] bg-transparent md:bg-gradient-to-tl from-[#FFE066]/12 via-transparent to-transparent">
-          <main className="h-full w-full bg-[#050505] md:bg-[#141414] border-0 md:border border-[#222] rounded-none md:rounded-xl overflow-hidden relative">
-            <div className="h-full overflow-y-auto pb-24 md:pb-0">
+        <div className="h-full w-full rounded-none md:rounded-xl p-0 md:p-[2px] bg-gradient-to-tl from-[#FFE066]/12 via-transparent to-transparent">
+          <main className="h-full w-full bg-[#141414] border-0 md:border border-[#222] rounded-none md:rounded-xl overflow-hidden relative">
+            <div className="h-full overflow-y-auto pb-32 md:pb-0">
               {children}
             </div>
           </main>

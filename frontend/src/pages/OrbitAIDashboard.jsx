@@ -378,7 +378,7 @@ const OrbitAIDashboard = () => {
           )}
         </section>
         {/* Quick Actions Pill - Simplified */}
-        <div ref={pillRef} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#141414]/90 backdrop-blur-xl border border-[#222] rounded-full py-2 px-3 flex items-center gap-2 shadow-2xl z-40">
+        <div ref={pillRef} className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 bg-[#141414]/90 backdrop-blur-xl border border-[#222] rounded-full py-2 px-3 flex items-center gap-2 shadow-2xl z-40 transition-all duration-300">
           <button
             className="flex items-center gap-2 pl-3 pr-4 py-2 rounded-md text-white hover:bg-[#222] hover:rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/30"
             title="Add a new position"

@@ -411,26 +411,26 @@ const OrbitLoopDashboard = () => {
   }
 
   return (
-    <div className={`relative min-h-screen overflow-x-hidden font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
+    <div className={`relative min-h-screen overflow-x-hidden font-sans selection:bg-[#FFE066] selection:text-black transition-all duration-500 no-scrollbar ${pageReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} style={{ backgroundColor: COLORS.bg }}>
       <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-tl from-[#FFE066]/14 via-transparent to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(1200px 1000px at 12% 12%, rgba(255,224,102,0.22) 0%, rgba(255,224,102,0.12) 34%, transparent 76%)' }} />
       <div className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#8B5CF6]/12 rounded-full blur-[160px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[55%] h-[55%] bg-[#FFE066]/8 rounded-full blur-[180px]" />
       </div>
-      <main className="relative z-10 p-8 max-w-[1600px] mx-auto">
+      <main className="relative z-10 p-4 md:p-8 max-w-[1600px] mx-auto">
 
         {/* Header Section */}
-        <header className="flex justify-between items-end mb-10">
+        <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6 md:mb-10">
           <div>
-            <h1 className="text-white text-3xl font-bold tracking-tight mb-2">Active Loops</h1>
-            <p className="text-[#666] flex items-center gap-2">
+            <h1 className="text-white text-2xl md:text-3xl font-bold tracking-tight mb-2">Active Loops</h1>
+            <p className="text-[#666] flex items-center gap-2 text-xs md:text-sm">
               <span className="w-2 h-2 rounded-full bg-[#33FFCC]"></span>
               Global Overview & Risk Management
             </p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
             {/* Wallet Filter */}
             <OrbitSelect
               value={filters.wallet}
@@ -438,7 +438,7 @@ const OrbitLoopDashboard = () => {
               options={["all", ...uniqueWallets]}
               placeholder="All Wallets"
               icon={<Wallet size={16} className="text-[#888]" />}
-              className="w-48 border-[#333] hover:bg-[#141414]"
+              className="w-full md:w-48 border-[#333] hover:bg-[#141414]"
               contentClassName="border-[#333]"
             />
 
@@ -449,14 +449,14 @@ const OrbitLoopDashboard = () => {
               options={["all", ...uniqueChains]}
               placeholder="All Chains"
               icon={<Layers size={16} className="text-[#888]" />}
-              className="w-48 border-[#333] hover:bg-[#141414]"
+              className="w-full md:w-48 border-[#333] hover:bg-[#141414]"
               contentClassName="border-[#333]"
             />
 
             {/* Primary Action */}
             <button
               onClick={handleAddLoop}
-              className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
+              className="h-12 px-8 rounded-full flex items-center justify-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
               style={{ backgroundColor: COLORS.primary, color: COLORS.textDark }}
             >
               <Plus size={20} />
@@ -470,15 +470,15 @@ const OrbitLoopDashboard = () => {
 
           {/* Card 1: Total Equity (Hero Yellow) */}
           <div
-            className="col-span-12 lg:col-span-4 p-8 rounded-[32px] flex flex-col justify-between relative overflow-hidden transition-all hover:scale-[1.01]"
+            className="col-span-12 lg:col-span-4 p-5 md:p-8 rounded-[32px] flex flex-col justify-between relative overflow-hidden transition-all hover:scale-[1.01]"
             style={{ backgroundColor: COLORS.primary }}
           >
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2 opacity-80">
                 <Wallet size={20} className="text-black" />
-                <span className="text-black font-medium text-sm uppercase tracking-wide">Total Net Equity</span>
+                <span className="text-black font-medium text-xs md:text-sm uppercase tracking-wide">Total Net Equity</span>
               </div>
-              <h2 className="text-5xl font-bold text-black tracking-tight mb-4">
+              <h2 className="text-4xl md:text-5xl font-bold text-black tracking-tight mb-4">
                 ${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </h2>
               {/* Mock metric for visual fidelity */}
@@ -492,11 +492,11 @@ const OrbitLoopDashboard = () => {
           </div>
 
           {/* Card 2: Debt & Leverage Metrics (Standard Dark) */}
-          <div className="col-span-12 md:col-span-6 lg:col-span-5 p-8 rounded-[32px] bg-[#141414] border border-[#222]">
+          <div className="col-span-12 md:col-span-6 lg:col-span-5 p-5 md:p-8 rounded-[32px] bg-[#141414] border border-[#222]">
             <div className="flex justify-between mb-8">
               <div>
-                <p className="text-[#888] text-sm uppercase mb-1">Total Active Debt</p>
-                <p className="text-white text-3xl font-semibold">${totalDebt.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                <p className="text-[#888] text-xs md:text-sm uppercase mb-1">Total Active Debt</p>
+                <p className="text-white text-2xl md:text-3xl font-semibold">${totalDebt.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
               </div>
               <div className="text-right">
                 <p className="text-[#888] text-sm uppercase mb-1">Avg. Health Factor</p>

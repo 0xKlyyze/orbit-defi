@@ -376,19 +376,20 @@ const PositionsDashboard = () => {
       {/* Global sidebar is now provided by App-level layout */}
 
       {/* 2. Main Content */}
-      <main className={`flex-1 p-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out ${pageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+      {/* 2. Main Content */}
+      <main className={`flex-1 p-4 md:p-8 max-w-[1600px] mx-auto transition-all duration-700 ease-out no-scrollbar ${pageLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
 
         {/* Header */}
-        <header className="flex justify-between items-end mb-10">
+        <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6 md:mb-10">
           <div>
-            <h1 className="text-white text-3xl font-bold tracking-tight mb-2">Standard Dashboard</h1>
-            <p className="text-[#666] flex items-center gap-2 text-sm">
+            <h1 className="text-white text-2xl md:text-3xl font-bold tracking-tight mb-2">Standard Dashboard</h1>
+            <p className="text-[#666] flex items-center gap-2 text-xs md:text-sm">
               <span className="w-2 h-2 rounded-full bg-[#FFE066]"></span>
               Manual Portfolio Tracking
             </p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
             {/* Filter Toggles */}
             <OrbitSelect
               value={filters.wallet}
@@ -396,14 +397,14 @@ const PositionsDashboard = () => {
               options={['all', ...uniqueWallets]}
               placeholder="All Wallets"
               icon={<Wallet size={16} className="text-[#888]" />}
-              className="border-[#333] w-48 hover:bg-[#141414]"
+              className="border-[#333] w-full md:w-48 hover:bg-[#141414]"
               contentClassName="min-w-[200px]"
             />
 
             {/* Add Button */}
             <button
               onClick={handleAddClick}
-              className="h-12 px-8 rounded-full flex items-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
+              className="h-12 px-8 rounded-full flex items-center justify-center gap-2 font-medium transition-transform active:scale-95 shadow-[0_0_20px_rgba(255,224,102,0.2)] hover:shadow-[0_0_25px_rgba(255,224,102,0.4)]"
               style={{ backgroundColor: COLORS.primary, color: 'black' }}
             >
               <Plus size={20} />
@@ -417,7 +418,7 @@ const PositionsDashboard = () => {
 
           {/* Net Worth (Hero) */}
           <div
-            className="col-span-12 md:col-span-4 lg:col-span-3 p-6 rounded-[24px] flex flex-col justify-between transition-all hover:scale-[1.01]"
+            className="col-span-12 md:col-span-4 lg:col-span-3 p-5 md:p-6 rounded-[24px] flex flex-col justify-between transition-all hover:scale-[1.01]"
             style={{ backgroundColor: COLORS.primary }}
           >
             <div>
@@ -425,7 +426,7 @@ const PositionsDashboard = () => {
                 <Wallet size={18} className="text-black" />
                 <span className="text-black font-bold text-xs uppercase">Net Worth</span>
               </div>
-              <h2 className="text-4xl font-bold text-black tracking-tight">${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-black tracking-tight">${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
             </div>
             <div className="mt-4 pt-4 border-t border-black/10">
               <div className="flex justify-between text-black text-xs font-medium">
@@ -436,26 +437,26 @@ const PositionsDashboard = () => {
           </div>
 
           {/* Supply Stats */}
-          <div className="col-span-12 md:col-span-4 lg:col-span-3 p-6 rounded-[24px] bg-[#141414] border border-[#222]">
+          <div className="col-span-12 md:col-span-4 lg:col-span-3 p-5 md:p-6 rounded-[24px] bg-[#141414] border border-[#222]">
             <div className="flex items-center gap-2 mb-6">
               <div className="p-2 rounded-lg bg-[#33FFCC]/10 text-[#33FFCC]">
                 <ArrowUpRight size={18} />
               </div>
               <span className="text-[#888] text-xs uppercase font-bold">Total Supplied</span>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-1">${totalSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">${totalSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
             <p className="text-[#33FFCC] text-sm font-medium">Assets</p>
           </div>
 
           {/* Borrow Stats */}
-          <div className="col-span-12 md:col-span-4 lg:col-span-3 p-6 rounded-[24px] bg-[#141414] border border-[#222]">
+          <div className="col-span-12 md:col-span-4 lg:col-span-3 p-5 md:p-6 rounded-[24px] bg-[#141414] border border-[#222]">
             <div className="flex items-center gap-2 mb-6">
               <div className="p-2 rounded-lg bg-[#FF6633]/10 text-[#FF6633]">
                 <ArrowDownLeft size={18} />
               </div>
               <span className="text-[#888] text-xs uppercase font-bold">Total Borrowed</span>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-1">${totalBorrow.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">${totalBorrow.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h2>
             <p className="text-[#FF6633] text-sm font-medium">Liabilities</p>
           </div>
 
